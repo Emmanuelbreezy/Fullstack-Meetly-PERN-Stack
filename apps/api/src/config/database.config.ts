@@ -28,7 +28,7 @@ export const getDatabaseConfig = () => {
     entities: [__dirname + "/../database/entities/*{.ts,.js}"], // Updated path
     migrations: [__dirname + "/../database/migrations/*{.ts,.js}"], // Updated path
     synchronize: !isProduction,
-    logging: !isProduction,
+    logging: ["error"],
     ssl: isProduction ? { rejectUnauthorized: false } : false,
   });
 };
