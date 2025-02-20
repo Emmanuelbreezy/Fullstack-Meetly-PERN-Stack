@@ -8,15 +8,21 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { User } from "./user.entity";
-import { Booking } from "./booking.entity";
-import { IsBoolean } from "class-validator";
+import { Meeting } from "./meeting.entity";
+import { IntegrationAppTypeEnum } from "./integration.entity";
 
-@Entity()
+enum EventLocationEnumType {
+  GOOGLE_MEET = IntegrationAppTypeEnum.GOOGLE_MEET,
+  ZOOM = IntegrationAppTypeEnum.ZOOM,
+  MICROSOFT_TEAMS = IntegrationAppTypeEnum.MICROSOFT_TEAMS,
+}
+
+@Entity({ name: "events" })
 export class Event {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ nullable: false })
   title: string;
 
   @Column({ nullable: true })
@@ -25,15 +31,20 @@ export class Event {
   @Column()
   duration: number;
 
+  @Column({ nullable: false })
+  slug: string;
+
+  @Column({ nullable: false, default: true })
+  isPrivate: boolean;
+
+  @Column({ type: "enum", enum: EventLocationEnumType })
+  locationType: EventLocationEnumType;
+
   @ManyToOne(() => User, (user) => user.events)
   user: User;
 
-  @OneToMany(() => Booking, (booking) => booking.event)
-  bookings: Booking[];
-
-  @Column({ default: true })
-  @IsBoolean({ message: "isPrivate must be a boolean" })
-  isPrivate: boolean;
+  @OneToMany(() => Meeting, (meeting) => meeting.event)
+  meetings: Meeting[];
 
   @CreateDateColumn()
   createdAt: Date;

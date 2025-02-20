@@ -7,7 +7,16 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Availability } from "./availability.entity";
-import { DayOfWeek } from "../../enums/days-week.enum";
+
+export enum DayOfWeek {
+  MONDAY = "MONDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+  THURSDAY = "THURSDAY",
+  FRIDAY = "FRIDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+}
 
 @Entity()
 export class DayAvailability {

@@ -11,25 +11,31 @@ import {
   JoinColumn,
 } from "typeorm";
 import { Event } from "./event.entity";
-import { Booking } from "./booking.entity";
+import { Meeting } from "./meeting.entity";
 import { Availability } from "./availability.entity";
 import { compareValue, hashValue } from "../../utils/bcrypt";
+import { IsEmail, IsNotEmpty } from "class-validator";
+import { Integration } from "./integration.entity";
 
-@Entity()
+@Entity({ name: "users" })
 export class User {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column({ nullable: false })
+  @IsNotEmpty()
   name: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: false })
   username: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: false })
+  @IsEmail()
+  @IsNotEmpty({ message: "Email is required" })
   email: string;
 
-  @Column() // Add a password column
+  @Column()
+  @IsNotEmpty()
   password: string;
 
   @Column({ nullable: true })
@@ -38,12 +44,15 @@ export class User {
   @OneToMany(() => Event, (event) => event.user)
   events: Event[];
 
-  @OneToMany(() => Booking, (booking) => booking.user)
-  bookings: Booking[];
+  @OneToMany(() => Meeting, (meeting) => meeting.user)
+  meetings: Meeting[];
 
   @OneToOne(() => Availability, (availability) => availability.user)
   @JoinColumn()
   availability: Availability;
+
+  @OneToMany(() => Integration, (integration) => integration.user)
+  integrations: Integration[];
 
   @CreateDateColumn()
   createdAt: Date;

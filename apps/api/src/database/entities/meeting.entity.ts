@@ -10,16 +10,16 @@ import {
 import { Event } from "./event.entity";
 import { User } from "./user.entity";
 
-@Entity()
-export class Booking {
+@Entity({ name: "meetings" })
+export class Meeting {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @ManyToOne(() => Event, (event) => event.bookings)
+  @ManyToOne(() => Event, (event) => event.meetings)
   @JoinColumn()
   event: Event;
 
-  @ManyToOne(() => User, (user) => user.bookings)
+  @ManyToOne(() => User, (user) => user.meetings)
   user: User;
 
   @Column()

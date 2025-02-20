@@ -6,6 +6,7 @@ import {
   StrategyOptions,
 } from "passport-jwt";
 import { config } from "./app.config";
+import { findByIdUserService } from "../services/user.service";
 
 interface JwtPayload {
   userId: string;
@@ -21,8 +22,7 @@ const options: StrategyOptions = {
 passport.use(
   new JwtStrategy(options, async (payload: JwtPayload, done) => {
     try {
-      //await findUserByIdService(payload.userId);
-      const user = null;
+      const user = await findByIdUserService(payload.userId);
       if (!user) {
         return done(null, false);
       }

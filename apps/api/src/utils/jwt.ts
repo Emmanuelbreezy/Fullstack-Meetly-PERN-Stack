@@ -1,8 +1,6 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import { config } from "../config/app.config";
 
-console.log(config.JWT_EXPIRES_IN, "config.JWT_EXPIRES_IN");
-
 export type AccessTPayload = {
   userId: string;
 };

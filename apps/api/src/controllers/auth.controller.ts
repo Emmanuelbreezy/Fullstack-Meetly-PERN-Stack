@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
-import { RegisterDTO } from "../database/dto/register.dto";
+import { LoginDTO, RegisterDTO } from "../database/dto/auth.dto";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
-import { registerService } from "../services/auth.service";
+import { loginService, registerService } from "../services/auth.service";
 import { HTTPSTATUS } from "../config/http.config";
 import { formatValidationError } from "../middlewares/errorHandler.middleware";
 
@@ -24,5 +24,17 @@ export const registerController = asyncHandler(
 );
 
 export const loginController = asyncHandler(
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response) => {
+    const loginDTO = plainToInstance(LoginDTO, req.body);
+    const errors = await validate(loginDTO);
+    if (errors?.length > 0) {
+      formatValidationError(res, errors);
+    }
+    const data = await loginService(loginDTO);
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: "User logged in successfully",
+      data,
+    });
+  }
 );
