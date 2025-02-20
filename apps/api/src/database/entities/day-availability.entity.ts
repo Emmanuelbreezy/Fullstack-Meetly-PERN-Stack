@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { Availability } from "./availability.entity";
 
-export enum DayOfWeek {
+export enum DayOfWeekEnum {
   MONDAY = "MONDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
@@ -26,8 +26,8 @@ export class DayAvailability {
   @ManyToOne(() => Availability, (availability) => availability.days)
   availability: Availability;
 
-  @Column({ type: "enum", enum: DayOfWeek })
-  day: DayOfWeek;
+  @Column({ type: "enum", enum: DayOfWeekEnum })
+  day: DayOfWeekEnum;
 
   @Column()
   startTime: Date;

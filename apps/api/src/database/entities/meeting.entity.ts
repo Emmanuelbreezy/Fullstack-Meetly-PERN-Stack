@@ -10,6 +10,7 @@ import {
 import { Event } from "./event.entity";
 import { User } from "./user.entity";
 
+// booking not meetings
 @Entity({ name: "meetings" })
 export class Meeting {
   @PrimaryGeneratedColumn("uuid")
