@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsBoolean,
+  IsEnum,
+} from "class-validator";
+import { EventLocationEnumType } from "../entities/event.entity";
 
 export class CreateEventDTO {
   @IsString()
@@ -13,7 +21,17 @@ export class CreateEventDTO {
   @IsNotEmpty()
   duration: number;
 
+  @IsBoolean()
+  @IsNotEmpty()
+  isPrivate: boolean;
+
+  @IsEnum(EventLocationEnumType)
+  @IsNotEmpty()
+  locationType: EventLocationEnumType;
+}
+
+export class EventIdDTO {
   @IsString()
   @IsNotEmpty()
-  slug: string;
+  eventId: string;
 }

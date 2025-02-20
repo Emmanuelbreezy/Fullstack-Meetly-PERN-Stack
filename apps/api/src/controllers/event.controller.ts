@@ -3,8 +3,11 @@ import { validate } from "class-validator";
 import { plainToInstance } from "class-transformer";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { HTTPSTATUS } from "../config/http.config";
-import { CreateEventDTO } from "../database/dto/event.dto";
-import { createEventService } from "../services/event.service";
+import { CreateEventDTO, EventIdDTO } from "../database/dto/event.dto";
+import {
+  createEventService,
+  toggleEventPrivacyService,
+} from "../services/event.service";
 import { formatValidationError } from "../middlewares/errorHandler.middleware";
 
 export const createEventController = asyncHandler(
@@ -25,6 +28,29 @@ export const createEventController = asyncHandler(
 
     return res.status(HTTPSTATUS.CREATED).json({
       message: "Event created successfully",
+      event,
+    });
+  }
+);
+
+export const toggleEventPrivacyController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+
+    const eventIdDTO = plainToInstance(EventIdDTO, {
+      eventId: req.params.eventId,
+    });
+
+    const errors = await validate(eventIdDTO);
+    if (errors?.length > 0) {
+      formatValidationError(res, errors);
+    }
+    const event = await toggleEventPrivacyService(userId, eventIdDTO);
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: `Event set to${
+        event.isPrivate ? "private" : "public"
+      }. successfully`,
       event,
     });
   }

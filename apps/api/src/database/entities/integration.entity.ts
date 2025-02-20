@@ -17,11 +17,10 @@ export enum IntegrationAppTypeEnum {
 
 interface GoogleMeetMetadata {
   email: string;
-  timeZone?: string;
+  scope: string;
 }
 
 interface ZoomMetadata {
-  meetingId: string;
   hostEmail: string;
 }
 
@@ -47,7 +46,7 @@ export class Integration {
   @Column({ default: true })
   isConnected: boolean;
 
-  @Column()
+  @Column({ nullable: false })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.integrations)

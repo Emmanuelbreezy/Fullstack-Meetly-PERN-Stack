@@ -11,7 +11,7 @@ import { User } from "./user.entity";
 import { Meeting } from "./meeting.entity";
 import { IntegrationAppTypeEnum } from "./integration.entity";
 
-enum EventLocationEnumType {
+export enum EventLocationEnumType {
   GOOGLE_MEET = IntegrationAppTypeEnum.GOOGLE_MEET,
   ZOOM = IntegrationAppTypeEnum.ZOOM,
   MICROSOFT_TEAMS = IntegrationAppTypeEnum.MICROSOFT_TEAMS,

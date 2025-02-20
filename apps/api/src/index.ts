@@ -11,6 +11,7 @@ import { initializeDatabase } from "./database/database";
 import authRoutes from "./routes/auth.route";
 import eventRoutes from "./routes/event.route";
 import { passportAuthenticateJWT } from "./config/passport.config";
+import integrationRoutes from "./routes/integration.route";
 
 const app = express();
 const BASE_PATH = config.BASE_PATH;
@@ -39,6 +40,7 @@ app.get(
 
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/event`, passportAuthenticateJWT, eventRoutes);
+app.use(`${BASE_PATH}/integration`, integrationRoutes);
 
 app.use(errorHandler);
 
