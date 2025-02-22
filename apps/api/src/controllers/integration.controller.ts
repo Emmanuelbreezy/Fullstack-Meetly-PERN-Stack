@@ -1,17 +1,20 @@
 import { google } from "googleapis";
 import { Request, Response } from "express";
-import {
-  BadRequestException,
-  InternalServerException,
-} from "../utils/app-error";
-import {
-  createGoogleIntegrationService,
-  createZoomIntegration,
-} from "../services/integration.service";
+import { BadRequestException } from "../utils/app-error";
 import { asyncHandler } from "../middlewares/asyncHandler.middleware";
 import { config } from "../config/app.config";
 import axios from "axios";
 import { decodeState, encodeState } from "../utils/helper";
+import {
+  IntegrationAppTypeEnum,
+  IntegrationCategoryEnum,
+  IntegrationProviderEnum,
+} from "../database/entities/integration.entity";
+import {
+  createIntegrationService,
+  getUserIntegrationsService,
+} from "../services/integration.service";
+import { HTTPSTATUS } from "../config/http.config";
 
 const oauth2Client = new google.auth.OAuth2(
   config.GOOGLE_CLIENT_ID,
@@ -20,6 +23,18 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 const CLIENT_APP_URL = `${config.FRONTEND_ORIGIN}/integrations`;
+
+export const getUserIntegrationsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+
+    const integrations = await getUserIntegrationsService(userId);
+    res.status(HTTPSTATUS.OK).json({
+      message: "Fetched user integration successfully",
+      data: integrations,
+    });
+  }
+);
 
 // Step 1: Redirect to Google OAuth consent screen
 export const connectGoogleController = asyncHandler(
@@ -80,8 +95,11 @@ export const googleOAuthCallbackController = asyncHandler(
       return res.redirect(`${CLIENT_URL}&error=Access Token not passed`);
     }
     // Save the tokens in the database
-    await createGoogleIntegrationService({
+    await createIntegrationService({
       userId: userId,
+      provider: IntegrationProviderEnum.GOOGLE,
+      category: IntegrationCategoryEnum.VIDEO_CONFERENCING,
+      app_type: IntegrationAppTypeEnum.GOOGLE_MEET,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token || undefined,
       metadata: {
@@ -89,11 +107,24 @@ export const googleOAuthCallbackController = asyncHandler(
         scope: tokens.scope, // Granted scopes
       },
     });
+
+    await createIntegrationService({
+      userId: userId,
+      provider: IntegrationProviderEnum.GOOGLE,
+      category: IntegrationCategoryEnum.CALENDAR,
+      app_type: IntegrationAppTypeEnum.GOOGLE_CALENDAR,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token || undefined,
+      metadata: {
+        email: email,
+        scope: tokens.scope,
+      },
+    });
     return res.redirect(`${CLIENT_URL}&success=true`);
   }
 );
 
-// Skip this once *************************
+//*************** */ Skip this once *************************
 export const connectZoomController = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
@@ -158,17 +189,19 @@ export const zoomOAuthCallbackController = asyncHandler(
     const timeZone = profileResponse.data.timezone;
 
     // Save the tokens and metadata in the database
-    await createZoomIntegration({
+    await createIntegrationService({
       userId: userId,
-      accessToken: access_token,
-      refreshToken: refresh_token,
+      provider: IntegrationProviderEnum.ZOOM,
+      category: IntegrationCategoryEnum.VIDEO_CONFERENCING,
+      app_type: IntegrationAppTypeEnum.ZOOM_MEETING,
+      access_token: access_token,
+      refresh_token: refresh_token,
       metadata: {
         email: email, // User's email
         timeZone: timeZone, // User's time zone
-        refreshTokenExpiry: new Date(Date.now() + expires_in * 1000), // Refresh token expiry
+        refreshTokenExpiry: new Date(Date.now() + expires_in * 1000),
       },
     });
-
     return res.redirect(`${CLIENT_URL}&success=true`);
   }
 );

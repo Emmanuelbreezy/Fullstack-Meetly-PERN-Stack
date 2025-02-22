@@ -8,10 +8,18 @@ import {
   UnauthorizedException,
 } from "../utils/app-error";
 import { signJwtToken } from "../utils/jwt";
+import { Availability } from "../database/entities/availability.entity";
+import {
+  DayAvailability,
+  DayOfWeekEnum,
+} from "../database/entities/day-availability.entity";
 
 export const registerService = async (userData: RegisterDTO) => {
   try {
     const userRepository = AppDataSource.getRepository(User);
+    const availabilityRepository = AppDataSource.getRepository(Availability);
+    const dayAvailabilityRepository =
+      AppDataSource.getRepository(DayAvailability);
 
     const existingUser = await userRepository.findOne({
       where: { email: userData.email },
@@ -24,6 +32,19 @@ export const registerService = async (userData: RegisterDTO) => {
       ...userData,
       username: username,
     });
+
+    const availability = availabilityRepository.create({
+      timeGap: 30, // Default time gap in minutes
+      days: Object.values(DayOfWeekEnum).map((day) => {
+        return dayAvailabilityRepository.create({
+          day: day,
+          startTime: new Date(`1970-01-01T09:00:00Z`), // 09:00 AM
+          endTime: new Date(`1970-01-01T17:00:00Z`), // 05:00 PM
+        });
+      }),
+    });
+
+    user.availability = availability;
     await userRepository.save(user);
 
     return { user: user.omitPassword() };

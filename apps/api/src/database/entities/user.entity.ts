@@ -41,17 +41,27 @@ export class User {
   @Column({ nullable: true })
   imageUrl: string;
 
-  @OneToMany(() => Event, (event) => event.user)
+  //cascade=true -> ensures related entities are automatically
+  //  saved/updated/deleted.
+  @OneToMany(() => Event, (event) => event.user, {
+    cascade: true,
+  })
   events: Event[];
 
-  @OneToMany(() => Meeting, (meeting) => meeting.user)
+  @OneToMany(() => Meeting, (meeting) => meeting.user, {
+    cascade: true,
+  })
   meetings: Meeting[];
 
-  @OneToOne(() => Availability, (availability) => availability.user)
+  @OneToOne(() => Availability, (availability) => availability.user, {
+    cascade: true,
+  })
   @JoinColumn()
   availability: Availability;
 
-  @OneToMany(() => Integration, (integration) => integration.user)
+  @OneToMany(() => Integration, (integration) => integration.user, {
+    cascade: true,
+  })
   integrations: Integration[];
 
   @CreateDateColumn()

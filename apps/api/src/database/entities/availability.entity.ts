@@ -20,7 +20,10 @@ export class Availability {
 
   @OneToMany(
     () => DayAvailability,
-    (dayAvailability) => dayAvailability.availability
+    (dayAvailability) => dayAvailability.availability,
+    {
+      cascade: true,
+    }
   )
   days: DayAvailability[];
 

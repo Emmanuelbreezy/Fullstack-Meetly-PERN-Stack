@@ -33,21 +33,16 @@ export const updateAvailabilityController = asyncHandler(
       UpdateAvailabilityDto,
       req.body
     );
+
     const errors = await validate(updateAvailabilityDto);
     if (errors?.length > 0) {
       formatValidationError(res, errors);
     }
 
-    const availability = await updateAvailabilityService(
-      userId,
-      updateAvailabilityDto
-    );
+    await updateAvailabilityService(userId, updateAvailabilityDto);
 
     return res.status(HTTPSTATUS.OK).json({
       message: "Availability updated successfully",
-      data: {
-        availability,
-      },
     });
   }
 );

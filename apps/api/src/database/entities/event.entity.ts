@@ -13,8 +13,7 @@ import { IntegrationAppTypeEnum } from "./integration.entity";
 
 export enum EventLocationEnumType {
   GOOGLE_MEET = IntegrationAppTypeEnum.GOOGLE_MEET,
-  ZOOM = IntegrationAppTypeEnum.ZOOM,
-  MICROSOFT_TEAMS = IntegrationAppTypeEnum.MICROSOFT_TEAMS,
+  ZOOM_MEETING = IntegrationAppTypeEnum.ZOOM_MEETING,
 }
 
 @Entity({ name: "events" })
