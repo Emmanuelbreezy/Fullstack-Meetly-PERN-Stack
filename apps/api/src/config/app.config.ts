@@ -5,7 +5,7 @@ const appConfig = () => ({
   PORT: getEnv("PORT", "5000"),
   BASE_PATH: getEnv("BASE_PATH", "/api"),
 
-  NEON_POSTGRES_URL: getEnv("NEON_POSTGRES_URL"),
+  DATABASE_URL: getEnv("DATABASE_URL"),
 
   JWT_SECRET: getEnv("JWT_SECRET", "secert_jwt"),
   JWT_EXPIRES_IN: getEnv("JWT_EXPIRES_IN", "1d"),

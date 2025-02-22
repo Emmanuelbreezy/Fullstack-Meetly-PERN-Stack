@@ -1,5 +1,7 @@
+import { AvailabilityResponseType } from "../@types/availability.type";
 import { AppDataSource } from "../config/database.config";
-import { CreateEventDTO, EventIdDTO } from "../database/dto/event.dto";
+import { CreateEventDTO, UserNameAndSlugDTO } from "../database/dto/event.dto";
+import { DayOfWeekEnum } from "../database/entities/day-availability.entity";
 import {
   Event,
   EventLocationEnumType,
@@ -17,10 +19,11 @@ export const createEventService = async (
   eventData: CreateEventDTO
 ) => {
   try {
+    console.log(eventData, "eventData");
     const eventRepository = AppDataSource.getRepository(Event);
 
     if (
-      !Object.values(EventLocationEnumType).includes(eventData.locationType)
+      !Object.values(EventLocationEnumType)?.includes(eventData.locationType)
     ) {
       throw new BadRequestException("Invalid location type");
     }
@@ -41,18 +44,10 @@ export const createEventService = async (
 export const getUserEventsService = async (userId: string) => {
   try {
     const userRepository = AppDataSource.getRepository(User);
-
-    // const user = await userRepository.findOne({
-    //   where: { id: userId },
-    //   relations: ["events", "events.meetings"],
-    //   order: { events: { createdAt: "DESC" } },
-    // });
-
     const user = await userRepository
       .createQueryBuilder("user")
       .leftJoinAndSelect("user.events", "event")
-      .leftJoinAndSelect("event.meetings", "meeting")
-      .loadRelationCountAndMap("event.count.meetings", "event.meetings")
+      .loadRelationCountAndMap("event._count.meetings", "event.meetings")
       .where("user.id = :userId", { userId })
       .orderBy("event.createdAt", "DESC")
       .getOne();
@@ -60,6 +55,12 @@ export const getUserEventsService = async (userId: string) => {
     if (!user) {
       throw new NotFoundException("User not found");
     }
+    // const user = await userRepository.findOne({
+    //   where: { id: userId },
+    //   relations: ["events", "events.meetings"],
+    //   order: { events: { createdAt: "DESC" } },
+    // });
+
     // Map events to include the count of meetings
     // const eventsWithCount = user.events.map((event) => ({
     //   ...event,
@@ -77,15 +78,114 @@ export const getUserEventsService = async (userId: string) => {
   }
 };
 
+//We can use the querybuilder to
+export const getPublicEventsByUsernameService = async (username: string) => {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const user = await userRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect(
+        "user.events",
+        "event",
+        "event.isPrivate = :isPrivate",
+        { isPrivate: false }
+      )
+      .where("user.username = :username", { username })
+      .select(["user.id", "user.name", "user.imageUrl"]) // Select user fields
+      .addSelect([
+        "event.id",
+        "event.title",
+        "event.description",
+        "event.slug",
+        "event.duration",
+      ]) // Select event fields
+      .getOne();
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    return {
+      user: {
+        name: user.name,
+        imageUrl: user.imageUrl,
+      },
+      events: user.events,
+    };
+  } catch (error) {
+    throw new InternalServerException("Failed to fetch public events");
+  }
+};
+
+export const getPublicEventByUsernameAndSlugService = async (
+  userNameAndSlugDTO: UserNameAndSlugDTO
+) => {
+  const { username, slug } = userNameAndSlugDTO;
+  try {
+    const eventRepository = AppDataSource.getRepository(Event);
+    const userRepository = AppDataSource.getRepository(User);
+    // Fetch the event by username and slug
+    const event = await eventRepository
+      .createQueryBuilder("event")
+      .leftJoinAndSelect("event.user", "user") // Join the user table
+      .where("user.username = :username", { username })
+      .andWhere("event.slug = :slug", { slug })
+      .andWhere("event.isPrivate = :isPrivate", { isPrivate: false }) // Only public events
+      .select([
+        "event.id",
+        "event.title",
+        "event.description",
+        "event.duration",
+        "event.slug",
+        "event.locationType",
+      ])
+      .addSelect(["user.id", "user.name", "user.imageUrl"]) // Select user fields
+      .getOne();
+
+    if (!event) {
+      throw new NotFoundException("Event not found");
+    }
+    // Fetch the user's availability
+    const user = await userRepository.findOne({
+      where: { id: event.user.id },
+      relations: ["availability", "availability.days"],
+    });
+
+    if (!user || !user.availability) {
+      throw new NotFoundException("User availability not found");
+    }
+
+    // Transform the availability data into the expected format
+    const availabilityData: AvailabilityResponseType = {
+      timeGap: user.availability.timeGap,
+      days: {},
+    };
+    user.availability.days.forEach((dayAvailability) => {
+      availabilityData.days[dayAvailability.day] = {
+        startTime: dayAvailability.startTime.toISOString().slice(11, 16), // Extract HH:MM
+        endTime: dayAvailability.endTime.toISOString().slice(11, 16), // Extract HH:MM
+        isAvailable: dayAvailability.isAvailable, // Use isAvailable from the entity
+      };
+    });
+
+    return {
+      event,
+      availability: availabilityData,
+    };
+  } catch (error) {
+    throw new InternalServerException("Failed to fetch event details");
+  }
+};
+
 export const toggleEventPrivacyService = async (
   userId: string,
-  eventIdDTO: EventIdDTO
+  eventId: string
 ) => {
   try {
     const eventRepository = AppDataSource.getRepository(Event);
 
     const event = await eventRepository.findOne({
-      where: { id: eventIdDTO.eventId, user: { id: userId } },
+      where: { id: eventId, user: { id: userId } },
     });
     if (!event) {
       throw new NotFoundException("Event not found");
@@ -94,6 +194,25 @@ export const toggleEventPrivacyService = async (
     await eventRepository.save(event);
 
     return event;
+  } catch (error) {
+    throw new InternalServerException();
+  }
+};
+
+export const deleteEventService = async (userId: string, eventId: string) => {
+  try {
+    const eventRepository = AppDataSource.getRepository(Event);
+    // Find the event by ID and user ID
+    const event = await eventRepository.findOne({
+      where: { id: eventId, user: { id: userId } },
+    });
+
+    if (!event) {
+      throw new NotFoundException("Event not found");
+    }
+    // Delete the event
+    await eventRepository.remove(event);
+    return { success: true };
   } catch (error) {
     throw new InternalServerException();
   }

@@ -1,30 +1,28 @@
 import "dotenv/config";
 import { DataSource } from "typeorm";
-import { parse } from "pg-connection-string"; // To parse the Postgres URL
+//import { parse } from "pg-connection-string"; // To parse the Postgres URL
 import { config } from "./app.config";
 
 // Parse the Neon Postgres URL
-const parseNeonUrl = (url: string) => {
-  const { host, port, user, password, database } = parse(url);
-  return {
-    host: host || "localhost",
-    port: parseInt(port || "5432", 10),
-    username: user || "postgres",
-    password: password || "postgres",
-    database: database || "meetly_db",
-  };
-};
+// const parseNeonUrl = (url: string) => {
+//   const { host, port, user, password, database } = parse(url);
+//   return {
+//     host: host || "localhost",
+//     port: parseInt(port || "5432", 10),
+//     username: user || "postgres",
+//     password: password || "postgres",
+//     database: database || "meetly_db",
+//   };
+// };
 
 // Get database configuration
 export const getDatabaseConfig = () => {
   const isProduction = config.NODE_ENV === "production";
-  const neonUrl = config.NEON_POSTGRES_URL;
-
-  const connection = parseNeonUrl(neonUrl);
+  const databaseUrl = config.DATABASE_URL;
 
   return new DataSource({
     type: "postgres",
-    url: config.NEON_POSTGRES_URL,
+    url: databaseUrl,
     entities: [__dirname + "/../database/entities/*{.ts,.js}"], // Updated path
     migrations: [__dirname + "/../database/migrations/*{.ts,.js}"], // Updated path
     synchronize: !isProduction,

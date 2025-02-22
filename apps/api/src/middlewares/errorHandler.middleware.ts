@@ -8,15 +8,13 @@ export const formatValidationError = (
   res: Response,
   errors: ValidationError[]
 ) => {
-  const formattedErrors = errors.map((error) => ({
-    field: error.property,
-    message: Object.values(error.constraints || {}).join(", "),
-  }));
-
   return res.status(HTTPSTATUS.BAD_REQUEST).json({
     message: "Validation failed",
-    errors: formattedErrors,
     errorCode: ErrorCodeEnum.VALIDATION_ERROR,
+    errors: errors.map((err) => ({
+      field: err.property,
+      message: err.constraints,
+    })),
   });
 };
 

@@ -8,16 +8,16 @@ import {
 } from "class-validator";
 import { DayOfWeekEnum } from "../entities/day-availability.entity";
 import { BadRequestException } from "../../utils/app-error";
-import { IsEarlierThan } from "../../decorator/availability.decorator";
+//import { IsEarlierThan } from "../../decorator/availability.decorator";
 
 export class DayAvailabilityDto {
   @IsString()
   endTime: string;
 
   @IsString()
-  @IsEarlierThan("endTime", {
-    message: "startTime must be earlier than endTime",
-  })
+  // @IsEarlierThan("endTime", {
+  //   message: "startTime must be earlier than endTime",
+  // })
   startTime: string;
 
   @IsBoolean()

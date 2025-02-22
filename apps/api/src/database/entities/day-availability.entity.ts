@@ -5,6 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from "typeorm";
 import { Availability } from "./availability.entity";
 
@@ -26,6 +27,7 @@ export class DayAvailability {
   @ManyToOne(() => Availability, (availability) => availability.days)
   availability: Availability;
 
+  @Index()
   @Column({ type: "enum", enum: DayOfWeekEnum })
   day: DayOfWeekEnum;
 
@@ -34,6 +36,9 @@ export class DayAvailability {
 
   @Column()
   endTime: Date;
+
+  @Column({ default: true })
+  isAvailable: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

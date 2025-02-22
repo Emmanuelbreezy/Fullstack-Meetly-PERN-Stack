@@ -40,6 +40,8 @@ export const registerService = async (userData: RegisterDTO) => {
           day: day,
           startTime: new Date(`1970-01-01T09:00:00Z`), // 09:00 AM
           endTime: new Date(`1970-01-01T17:00:00Z`), // 05:00 PM
+          isAvailable:
+            day !== DayOfWeekEnum.SATURDAY && day !== DayOfWeekEnum.SUNDAY,
         });
       }),
     });

@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsBoolean,
   IsEnum,
+  IsUUID,
 } from "class-validator";
 import { EventLocationEnumType } from "../entities/event.entity";
 
@@ -31,7 +32,24 @@ export class CreateEventDTO {
 }
 
 export class EventIdDTO {
-  @IsString()
+  //uuid v4
+  @IsUUID(4, { message: "Invalid UUID format" })
   @IsNotEmpty()
   eventId: string;
+}
+
+export class UserNameDTO {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+}
+
+export class UserNameAndSlugDTO {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  slug: string;
 }

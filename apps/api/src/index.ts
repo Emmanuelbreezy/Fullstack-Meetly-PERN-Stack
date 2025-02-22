@@ -41,7 +41,7 @@ app.get(
 
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/integration`, integrationRoutes);
-app.use(`${BASE_PATH}/event`, passportAuthenticateJWT, eventRoutes);
+app.use(`${BASE_PATH}/event`, eventRoutes);
 app.use(
   `${BASE_PATH}/availability`,
   passportAuthenticateJWT,
