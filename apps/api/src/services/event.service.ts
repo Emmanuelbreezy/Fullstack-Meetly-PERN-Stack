@@ -4,6 +4,7 @@ import {
   Event,
   EventLocationEnumType,
 } from "../database/entities/event.entity";
+import { User } from "../database/entities/user.entity";
 import {
   BadRequestException,
   InternalServerException,
@@ -32,6 +33,45 @@ export const createEventService = async (
     });
     await eventRepository.save(event);
     return event;
+  } catch (error) {
+    throw new InternalServerException();
+  }
+};
+
+export const getUserEventsService = async (userId: string) => {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+
+    // const user = await userRepository.findOne({
+    //   where: { id: userId },
+    //   relations: ["events", "events.meetings"],
+    //   order: { events: { createdAt: "DESC" } },
+    // });
+
+    const user = await userRepository
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.events", "event")
+      .leftJoinAndSelect("event.meetings", "meeting")
+      .loadRelationCountAndMap("event.count.meetings", "event.meetings")
+      .where("user.id = :userId", { userId })
+      .orderBy("event.createdAt", "DESC")
+      .getOne();
+
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+    // Map events to include the count of meetings
+    // const eventsWithCount = user.events.map((event) => ({
+    //   ...event,
+    //   _count: {
+    //     meetings: event.meetings.length, // Count of related meetings
+    //   },
+    // }));
+
+    return {
+      events: user.events,
+      username: user.username,
+    };
   } catch (error) {
     throw new InternalServerException();
   }

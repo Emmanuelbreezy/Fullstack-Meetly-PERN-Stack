@@ -6,6 +6,7 @@ import { HTTPSTATUS } from "../config/http.config";
 import { CreateEventDTO, EventIdDTO } from "../database/dto/event.dto";
 import {
   createEventService,
+  getUserEventsService,
   toggleEventPrivacyService,
 } from "../services/event.service";
 import { formatValidationError } from "../middlewares/errorHandler.middleware";
@@ -33,13 +34,27 @@ export const createEventController = asyncHandler(
   }
 );
 
+export const getUserEventsController = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+
+    const { events, username } = await getUserEventsService(userId);
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: `User event fetched successfully`,
+      data: {
+        events,
+        username,
+      },
+    });
+  }
+);
+
 export const toggleEventPrivacyController = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
 
-    const eventIdDTO = plainToInstance(EventIdDTO, {
-      eventId: req.params.eventId,
-    });
+    const eventIdDTO = plainToInstance(EventIdDTO, req.body);
 
     const errors = await validate(eventIdDTO);
     if (errors?.length > 0) {
@@ -48,7 +63,7 @@ export const toggleEventPrivacyController = asyncHandler(
     const event = await toggleEventPrivacyService(userId, eventIdDTO);
 
     return res.status(HTTPSTATUS.OK).json({
-      message: `Event set to${
+      message: `Event set to ${
         event.isPrivate ? "private" : "public"
       }. successfully`,
       event,
