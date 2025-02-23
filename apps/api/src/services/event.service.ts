@@ -135,6 +135,7 @@ export const getPublicEventByUsernameAndSlugService = async (
         "event.description",
         "event.duration",
         "event.slug",
+        "event.isPrivate",
         "event.locationType",
       ])
       .addSelect(["user.id", "user.name", "user.imageUrl"]) // Select user fields

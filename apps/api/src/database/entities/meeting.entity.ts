@@ -11,6 +11,11 @@ import { Event } from "./event.entity";
 import { User } from "./user.entity";
 
 // booking not meetings
+
+export enum MeetingStatus {
+  SCHEDULED = "SCHEDULED",
+  CANCELED = "CANCELED",
+}
 @Entity({ name: "meetings" })
 export class Meeting {
   @PrimaryGeneratedColumn("uuid")
@@ -24,10 +29,10 @@ export class Meeting {
   user: User;
 
   @Column()
-  name: string;
+  guestName: string;
 
   @Column()
-  email: string;
+  guestEmail: string;
 
   @Column({ nullable: true })
   additionalInfo: string;
@@ -42,7 +47,14 @@ export class Meeting {
   meetLink: string;
 
   @Column()
-  googleEventId: string;
+  calendarEventId: string; //googleEventId
+
+  @Column({
+    type: "enum",
+    enum: MeetingStatus,
+    default: MeetingStatus.SCHEDULED,
+  })
+  status: MeetingStatus;
 
   @CreateDateColumn()
   createdAt: Date;
