@@ -5,7 +5,10 @@ import {
   IntegrationCategoryEnum,
   IntegrationProviderEnum,
 } from "../database/entities/integration.entity";
-import { InternalServerException } from "../utils/app-error";
+import {
+  BadRequestException,
+  InternalServerException,
+} from "../utils/app-error";
 
 const appTypeToProviderMap: Record<
   IntegrationAppTypeEnum,
@@ -82,6 +85,18 @@ export const createIntegrationService = async (data: {
 }) => {
   try {
     const integrationRepository = AppDataSource.getRepository(Integration);
+
+    const existingIntegration = await integrationRepository.findOne({
+      where: {
+        userId: data.userId,
+        app_type: data.app_type,
+      },
+    });
+
+    if (existingIntegration) {
+      throw new BadRequestException(`${data.app_type} already connected`);
+    }
+
     const integration = integrationRepository.create({
       provider: data.provider,
       category: data.category,

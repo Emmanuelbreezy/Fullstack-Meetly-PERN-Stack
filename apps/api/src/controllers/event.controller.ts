@@ -50,6 +50,24 @@ export const getUserEventsController = asyncHandler(
   }
 );
 
+export const toggleEventPrivacyController = asyncHandler(
+  withValidation(
+    EventIdDTO,
+    "body"
+  )(async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+    const eventIdDTO = req.dto;
+    const event = await toggleEventPrivacyService(userId, eventIdDTO.eventId);
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: `Event set to ${
+        event.isPrivate ? "private" : "public"
+      } successfully`,
+      event,
+    });
+  })
+);
+
 // For guest
 export const getPublicEventsByUsernameController = asyncHandler(
   withValidation(
@@ -83,24 +101,6 @@ export const getPublicEventByUsernameAndSlugController = asyncHandler(
 
     return res.status(HTTPSTATUS.OK).json({
       message: "Event details fetched successfully",
-      event,
-    });
-  })
-);
-
-export const toggleEventPrivacyController = asyncHandler(
-  withValidation(
-    EventIdDTO,
-    "body"
-  )(async (req: Request, res: Response) => {
-    const userId = req.user?.id as string;
-    const eventIdDTO = req.dto;
-    const event = await toggleEventPrivacyService(userId, eventIdDTO.eventId);
-
-    return res.status(HTTPSTATUS.OK).json({
-      message: `Event set to ${
-        event.isPrivate ? "private" : "public"
-      } successfully`,
       event,
     });
   })
