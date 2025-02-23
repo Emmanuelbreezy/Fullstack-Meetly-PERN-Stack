@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  checkUserIntegrationController,
   connectGoogleController,
   connectZoomController,
   getUserIntegrationsController,
@@ -11,9 +12,15 @@ import { passportAuthenticateJWT } from "../config/passport.config";
 const integrationRoutes = express.Router();
 
 integrationRoutes.get(
-  "/user",
+  "/all",
   passportAuthenticateJWT,
   getUserIntegrationsController
+);
+
+integrationRoutes.get(
+  "/user/:appType",
+  passportAuthenticateJWT,
+  checkUserIntegrationController
 );
 
 // Initiate Google OAuth

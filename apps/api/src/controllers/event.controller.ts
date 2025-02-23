@@ -77,13 +77,13 @@ export const getPublicEventByUsernameAndSlugController = asyncHandler(
   )(async (req: Request, res: Response) => {
     const userNameAndSlugDTO = req.dto;
 
-    const { event, availability } =
-      await getPublicEventByUsernameAndSlugService(userNameAndSlugDTO);
+    const event = await getPublicEventByUsernameAndSlugService(
+      userNameAndSlugDTO
+    );
 
     return res.status(HTTPSTATUS.OK).json({
       message: "Event details fetched successfully",
       event,
-      availability,
     });
   })
 );

@@ -11,10 +11,13 @@ import {
   IntegrationProviderEnum,
 } from "../database/entities/integration.entity";
 import {
+  checkUserIntegrationService,
   createIntegrationService,
   getUserIntegrationsService,
 } from "../services/integration.service";
 import { HTTPSTATUS } from "../config/http.config";
+import { withValidation } from "../middlewares/withValidation.middleware";
+import { AppTypeDTO } from "../database/dto/integration.dto";
 
 const oauth2Client = new google.auth.OAuth2(
   config.GOOGLE_CLIENT_ID,
@@ -34,6 +37,25 @@ export const getUserIntegrationsController = asyncHandler(
       data: integrations,
     });
   }
+);
+
+export const checkUserIntegrationController = asyncHandler(
+  withValidation(
+    AppTypeDTO,
+    "params"
+  )(async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+    // Check if the user has connected the specified integration
+    const isConnected = await checkUserIntegrationService(
+      userId,
+      req.dto.appType
+    );
+
+    return res.status(HTTPSTATUS.OK).json({
+      message: "Integration check successful",
+      isConnected,
+    });
+  })
 );
 
 // Step 1: Redirect to Google OAuth consent screen

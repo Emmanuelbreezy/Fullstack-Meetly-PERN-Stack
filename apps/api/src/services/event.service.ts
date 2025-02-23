@@ -1,7 +1,6 @@
 import { AvailabilityResponseType } from "../@types/availability.type";
 import { AppDataSource } from "../config/database.config";
 import { CreateEventDTO, UserNameAndSlugDTO } from "../database/dto/event.dto";
-import { DayOfWeekEnum } from "../database/entities/day-availability.entity";
 import {
   Event,
   EventLocationEnumType,
@@ -123,7 +122,6 @@ export const getPublicEventByUsernameAndSlugService = async (
   const { username, slug } = userNameAndSlugDTO;
   try {
     const eventRepository = AppDataSource.getRepository(Event);
-    const userRepository = AppDataSource.getRepository(User);
     // Fetch the event by username and slug
     const event = await eventRepository
       .createQueryBuilder("event")
@@ -142,36 +140,7 @@ export const getPublicEventByUsernameAndSlugService = async (
       .addSelect(["user.id", "user.name", "user.imageUrl"]) // Select user fields
       .getOne();
 
-    if (!event) {
-      throw new NotFoundException("Event not found");
-    }
-    // Fetch the user's availability
-    const user = await userRepository.findOne({
-      where: { id: event.user.id },
-      relations: ["availability", "availability.days"],
-    });
-
-    if (!user || !user.availability) {
-      throw new NotFoundException("User availability not found");
-    }
-
-    // Transform the availability data into the expected format
-    const availabilityData: AvailabilityResponseType = {
-      timeGap: user.availability.timeGap,
-      days: {},
-    };
-    user.availability.days.forEach((dayAvailability) => {
-      availabilityData.days[dayAvailability.day] = {
-        startTime: dayAvailability.startTime.toISOString().slice(11, 16), // Extract HH:MM
-        endTime: dayAvailability.endTime.toISOString().slice(11, 16), // Extract HH:MM
-        isAvailable: dayAvailability.isAvailable, // Use isAvailable from the entity
-      };
-    });
-
-    return {
-      event,
-      availability: availabilityData,
-    };
+    return event;
   } catch (error) {
     throw new InternalServerException("Failed to fetch event details");
   }

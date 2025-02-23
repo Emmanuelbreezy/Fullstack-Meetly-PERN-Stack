@@ -50,6 +50,27 @@ export const getUserIntegrationsService = async (userId: string) => {
   }
 };
 
+export const checkUserIntegrationService = async (
+  userId: string,
+  appType: IntegrationAppTypeEnum
+): Promise<boolean> => {
+  try {
+    const integrationRepository = AppDataSource.getRepository(Integration);
+    // Check if the user has connected the specified integration
+    const integration = await integrationRepository.findOne({
+      where: { user: { id: userId }, app_type: appType },
+    });
+
+    if (!integration) {
+      return false; // Integration not found
+    }
+
+    return true; // Integration found
+  } catch (error) {
+    throw new InternalServerException("Failed to check integration");
+  }
+};
+
 export const createIntegrationService = async (data: {
   userId: string;
   provider: IntegrationProviderEnum;

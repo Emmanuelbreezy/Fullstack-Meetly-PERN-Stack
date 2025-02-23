@@ -42,11 +42,7 @@ app.get(
 app.use(`${BASE_PATH}/auth`, authRoutes);
 app.use(`${BASE_PATH}/integration`, integrationRoutes);
 app.use(`${BASE_PATH}/event`, eventRoutes);
-app.use(
-  `${BASE_PATH}/availability`,
-  passportAuthenticateJWT,
-  availabilityRoutes
-);
+app.use(`${BASE_PATH}/availability`, availabilityRoutes);
 
 app.use(errorHandler);
 
