@@ -169,7 +169,7 @@ export const getAvailabilityForPublicEventService = async (eventId: string) => {
     // We need the event, the user who created it, the user's availability,
     //  and their meetings
     const event = await eventRepository.findOne({
-      where: { id: eventId }, // Find the event by its ID
+      where: { id: eventId, isPrivate: false }, // Find the event by its ID
       relations: [
         "user", // Include the user who created the event
         "user.availability",
@@ -193,7 +193,7 @@ export const getAvailabilityForPublicEventService = async (eventId: string) => {
     // We'll calculate availability for the next 30 days
     // const startDate = startOfDay(new Date()); // Start from today
     // const endDate = addDays(startDate, 30); // End 30 days from today
-    const startDate = startOfMonth(new Date()); // First day of the month
+    const startDate = startOfDay(new Date()); // First day of the month
     const endDate = endOfMonth(new Date()); // Last day of the month
 
     // Step 6: Initialize an Array to Store Available Dates

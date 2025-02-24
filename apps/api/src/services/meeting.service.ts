@@ -71,31 +71,29 @@ export const createMeetBookingForGuestService = async (
   if (!Object.values(EventLocationEnumType).includes(event.locationType)) {
     throw new BadRequestException("Invalid location type");
   }
-
   // Step 3: Fetch the connected calendar integration
-  const calendarIntegration = await integrationRepository.findOne({
+  const meetIntegration = await integrationRepository.findOne({
     where: {
       user: { id: event.user.id },
-      category: IntegrationCategoryEnum.CALENDAR,
+      app_type: IntegrationAppTypeEnum[event.locationType],
     },
   });
 
-  if (!calendarIntegration) {
-    throw new BadRequestException("No calendar integration found");
+  if (!meetIntegration) {
+    throw new BadRequestException("No video conferencing integration found");
   }
 
-  // Step 4: Initialize the calendar client dynamically
-  const calendar = getCalendarClient(
-    calendarIntegration.app_type,
-    calendarIntegration.access_token
-  );
-
   // Step 5: Create the calendar event
-  let meetLink: string;
-  let calendarEventId: string;
+  let meetLink: string = "";
+  let calendarEventId: string = "";
 
-  if (event.locationType === EventLocationEnumType.GOOGLE_MEET) {
+  if (event.locationType === EventLocationEnumType.GOOGLE_MEET_AND_CALENDAR) {
     // Create Google Meet link
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({
+      access_token: meetIntegration.access_token,
+    });
+    const calendar = google.calendar({ version: "v3", auth: oauth2Client });
     const meetResponse = await calendar.events.insert({
       calendarId: "primary",
       conferenceDataVersion: 1,
@@ -113,10 +111,10 @@ export const createMeetBookingForGuestService = async (
 
     meetLink = meetResponse.data.hangoutLink!;
     calendarEventId = meetResponse.data.id!;
+  } else if (event.locationType === EventLocationEnumType.ZOOM_MEETING) {
   } else {
     throw new BadRequestException("Unsupported location type");
   }
-
   // Step 6: Save the meeting
   const meeting = meetingRepository.create({
     event: { id: event.id },
@@ -149,34 +147,44 @@ export const cancelMeetingService = async (meetingId: string) => {
   if (!meeting) {
     throw new NotFoundException("Meeting not found");
   }
-  // Step 2: Fetch the connected calendar integration
-  const calendarIntegration = await integrationRepository.findOne({
-    where: {
-      user: { id: meeting.event.user.id },
-      category: IntegrationCategoryEnum.CALENDAR,
-    },
-  });
-
-  if (!calendarIntegration) {
-    throw new BadRequestException("No calendar integration found");
-  }
-
-  // Step 3: Initialize the calendar client dynamically
-  const calendar = getCalendarClient(
-    calendarIntegration.app_type,
-    calendarIntegration.access_token
-  );
   // Step 4: Delete the calendar event
   try {
-    await calendar.events.delete({
-      calendarId: "primary",
-      eventId: meeting.calendarEventId,
+    //the where clause in your code uses an array of conditions,
+    //  which translates to an OR operation in TypeORM.
+    const calendarIntegration = await integrationRepository.findOne({
+      where: [
+        {
+          user: { id: meeting.event.user.id },
+          category: IntegrationCategoryEnum.CALENDAR_AND_VIDEO_CONFERENCING,
+        },
+        {
+          user: { id: meeting.event.user.id },
+          category: IntegrationCategoryEnum.CALENDAR,
+        },
+      ],
     });
+
+    if (calendarIntegration) {
+      // Step 3: Initialize the calendar client dynamically
+      const { calendar, calendarType } = getCalendarClient(
+        calendarIntegration.app_type,
+        calendarIntegration.access_token
+      );
+      switch (calendarType) {
+        case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR:
+          await calendar.events.delete({
+            calendarId: "primary",
+            eventId: meeting.calendarEventId,
+          });
+          break;
+        default:
+          throw new Error(`Unsupported calendar provider: ${calendarType}`);
+      }
+    }
   } catch (error) {
     console.error("Failed to delete event from calendar:", error);
     throw new BadRequestException("Failed to delete event from calendar");
   }
-
   // Step 5: Delete the meeting
   meeting.status = MeetingStatus.CANCELED;
   await meetingRepository.save(meeting);
@@ -189,11 +197,14 @@ function getCalendarClient(
   accessToken: string
 ) {
   switch (appType) {
-    case IntegrationAppTypeEnum.GOOGLE_CALENDAR:
+    case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR:
       const oauth2Client = new google.auth.OAuth2();
       oauth2Client.setCredentials({ access_token: accessToken });
       const calendar = google.calendar({ version: "v3", auth: oauth2Client });
-      return calendar;
+      return {
+        calendar,
+        calendarType: IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR,
+      };
     default:
       throw new Error(`Unsupported calendar provider: ${appType}`);
   }

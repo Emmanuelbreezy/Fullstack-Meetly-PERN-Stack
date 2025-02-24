@@ -116,32 +116,23 @@ export const googleOAuthCallbackController = asyncHandler(
     if (!tokens.access_token) {
       return res.redirect(`${CLIENT_URL}&error=Access Token not passed`);
     }
-    // Save the tokens in the database
-    await createIntegrationService({
-      userId: userId,
-      provider: IntegrationProviderEnum.GOOGLE,
-      category: IntegrationCategoryEnum.VIDEO_CONFERENCING,
-      app_type: IntegrationAppTypeEnum.GOOGLE_MEET,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token || undefined,
-      metadata: {
-        email: email,
-        scope: tokens.scope, // Granted scopes
-      },
-    });
 
-    await createIntegrationService({
-      userId: userId,
-      provider: IntegrationProviderEnum.GOOGLE,
-      category: IntegrationCategoryEnum.CALENDAR,
-      app_type: IntegrationAppTypeEnum.GOOGLE_CALENDAR,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token || undefined,
-      metadata: {
-        email: email,
-        scope: tokens.scope,
-      },
-    });
+    await Promise.all([
+      // Save the tokens in the database
+      createIntegrationService({
+        userId: userId,
+        provider: IntegrationProviderEnum.GOOGLE,
+        category: IntegrationCategoryEnum.CALENDAR_AND_VIDEO_CONFERENCING,
+        app_type: IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token || undefined,
+        metadata: {
+          email: email,
+          scope: tokens.scope, // Granted scopes
+        },
+      }),
+    ]);
+
     return res.redirect(`${CLIENT_URL}&success=true`);
   }
 );

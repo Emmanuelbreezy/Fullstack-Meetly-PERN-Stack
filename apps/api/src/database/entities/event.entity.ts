@@ -12,7 +12,7 @@ import { Meeting } from "./meeting.entity";
 import { IntegrationAppTypeEnum } from "./integration.entity";
 
 export enum EventLocationEnumType {
-  GOOGLE_MEET = IntegrationAppTypeEnum.GOOGLE_MEET,
+  GOOGLE_MEET_AND_CALENDAR = IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR,
   ZOOM_MEETING = IntegrationAppTypeEnum.ZOOM_MEETING,
 }
 

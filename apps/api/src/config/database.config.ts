@@ -25,8 +25,8 @@ export const getDatabaseConfig = () => {
     url: databaseUrl,
     entities: [__dirname + "/../database/entities/*{.ts,.js}"], // Updated path
     migrations: [__dirname + "/../database/migrations/*{.ts,.js}"], // Updated path
-    synchronize: !isProduction,
-    logging: ["error"],
+    synchronize: !isProduction, // Auto-sync schema in development
+    logging: ["error"], // Enable logging in development
     ssl: isProduction ? { rejectUnauthorized: false } : false,
   });
 };

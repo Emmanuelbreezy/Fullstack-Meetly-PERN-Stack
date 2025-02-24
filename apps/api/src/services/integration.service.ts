@@ -14,8 +14,8 @@ const appTypeToProviderMap: Record<
   IntegrationAppTypeEnum,
   IntegrationProviderEnum
 > = {
-  [IntegrationAppTypeEnum.GOOGLE_CALENDAR]: IntegrationProviderEnum.GOOGLE,
-  [IntegrationAppTypeEnum.GOOGLE_MEET]: IntegrationProviderEnum.GOOGLE,
+  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]:
+    IntegrationProviderEnum.GOOGLE,
   [IntegrationAppTypeEnum.ZOOM_MEETING]: IntegrationProviderEnum.ZOOM,
 };
 
@@ -23,9 +23,8 @@ const appTypeToCategoryMap: Record<
   IntegrationAppTypeEnum,
   IntegrationCategoryEnum
 > = {
-  [IntegrationAppTypeEnum.GOOGLE_CALENDAR]: IntegrationCategoryEnum.CALENDAR,
-  [IntegrationAppTypeEnum.GOOGLE_MEET]:
-    IntegrationCategoryEnum.VIDEO_CONFERENCING,
+  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]:
+    IntegrationCategoryEnum.CALENDAR,
   [IntegrationAppTypeEnum.ZOOM_MEETING]:
     IntegrationCategoryEnum.VIDEO_CONFERENCING,
 };
@@ -41,6 +40,7 @@ export const getUserIntegrationsService = async (userId: string) => {
     const connectedMap = new Map(
       userIntegrations.map((integration) => [integration.app_type, true])
     );
+
     // Generate all possible integrations
     return Object.values(IntegrationAppTypeEnum).map((appType) => ({
       provider: appTypeToProviderMap[appType],

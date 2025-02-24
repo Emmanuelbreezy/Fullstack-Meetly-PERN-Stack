@@ -1,5 +1,4 @@
 import passport from "passport";
-import { Request } from "express";
 import {
   Strategy as JwtStrategy,
   ExtractJwt,
