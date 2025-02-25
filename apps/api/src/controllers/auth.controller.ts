@@ -5,12 +5,15 @@ import { loginService, registerService } from "../services/auth.service";
 import { HTTPSTATUS } from "../config/http.config";
 import { withValidation } from "../middlewares/withValidation.middleware";
 
+//A higher-order function is a function that takes another function
+// as an argument or returns a function, e.g filter, map
+
 //The withValidation()() function is actually this
 //const validationMiddleware = withValidation(RegisterDTO, "body");
 // validationMiddleware(async (req: Request, res: Response) => {})
 
 export const registerController = asyncHandler(
-  // the handler is passed directly to the returned m
+  // the handler is passed directly to the returned
   // middleware function.
   withValidation(
     RegisterDTO,
