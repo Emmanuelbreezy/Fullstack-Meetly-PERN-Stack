@@ -1,5 +1,5 @@
 import { MoreThan, LessThan } from "typeorm";
-import { calendar_v3, google } from "googleapis";
+import { google } from "googleapis";
 import { AppDataSource } from "../config/database.config";
 import { Meeting, MeetingStatus } from "../database/entities/meeting.entity";
 import {
@@ -89,11 +89,10 @@ export const createMeetBookingForGuestService = async (
 
   if (event.locationType === EventLocationEnumType.GOOGLE_MEET_AND_CALENDAR) {
     // Create Google Meet link
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({
-      access_token: meetIntegration.access_token,
-    });
-    const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+    const { calendar } = getCalendarClient(
+      meetIntegration.app_type,
+      meetIntegration.access_token
+    );
     const meetResponse = await calendar.events.insert({
       calendarId: "primary",
       conferenceDataVersion: 1,

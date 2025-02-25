@@ -5,7 +5,13 @@ import { loginService, registerService } from "../services/auth.service";
 import { HTTPSTATUS } from "../config/http.config";
 import { withValidation } from "../middlewares/withValidation.middleware";
 
+//The withValidation()() function is actually this
+//const validationMiddleware = withValidation(RegisterDTO, "body");
+// validationMiddleware(async (req: Request, res: Response) => {})
+
 export const registerController = asyncHandler(
+  // the handler is passed directly to the returned m
+  // middleware function.
   withValidation(
     RegisterDTO,
     "body"

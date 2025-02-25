@@ -23,10 +23,7 @@ export const createEventController = asyncHandler(
     "body"
   )(async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
-    // const createEventDTO = plainToInstance(CreateEventDTO, req.body);
-    // const errors = await validate(createEventDTO);
-    // if (errors?.length > 0) formatValidationError(res, errors);
-    const createEventDTO = req.dto as CreateEventDTO; // Access the validated DTO
+    const createEventDTO = req.dto as CreateEventDTO;
     const event = await createEventService(userId, createEventDTO);
 
     return res.status(HTTPSTATUS.CREATED).json({
