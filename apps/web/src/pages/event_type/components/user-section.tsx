@@ -1,10 +1,10 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { APP_ORIGIN } from "@/lib/base-url";
+import { ENV } from "@/lib/get-env";
 import { PlusIcon } from "lucide-react";
 
 const UserSection = () => {
-  const my_link = `${APP_ORIGIN}/techwithEmma`;
+  const my_link = `${ENV.APP_ORIGIN}/techwithEmma`;
   return (
     <div
       className="w-full flex flex-wrap items-center justify-between 

@@ -12,6 +12,8 @@ import { User } from "./user.entity";
 export enum IntegrationProviderEnum {
   GOOGLE = "GOOGLE",
   ZOOM = "ZOOM",
+  //skip
+  MICROSOFT = "MICROSOFT",
 }
 
 export enum IntegrationAppTypeEnum {
@@ -19,13 +21,15 @@ export enum IntegrationAppTypeEnum {
   // GOOGLE_CALENDAR = "GOOGLE_CALENDAR",
   // GOOGLE_MEET = "GOOGLE_MEET",
   ZOOM_MEETING = "ZOOM_MEETING",
-  //OUTLOOK_CALENDAR = "OUTLOOK_CALENDAR",
+  //skip
+  OUTLOOK_CALENDAR = "OUTLOOK_CALENDAR",
+  MICROSOFT_TEAMS = "MICROSOFT_TEAMS",
 }
 
 export enum IntegrationCategoryEnum {
+  CALENDAR_AND_VIDEO_CONFERENCING = "CALENDAR_AND_VIDEO_CONFERENCING",
   VIDEO_CONFERENCING = "VIDEO_CONFERENCING",
   CALENDAR = "CALENDAR",
-  CALENDAR_AND_VIDEO_CONFERENCING = "CALENDAR_AND_VIDEO_CONFERENCING",
 }
 
 interface GoogleMeetMetadata {

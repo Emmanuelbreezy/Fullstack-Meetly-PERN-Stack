@@ -15,7 +15,7 @@ const AppLayout = () => {
         >
           <>
             <Header />
-            <div>
+            <div className="pb-8">
               <Outlet />
             </div>
           </>

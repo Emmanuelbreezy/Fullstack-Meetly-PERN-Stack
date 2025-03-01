@@ -10,23 +10,51 @@ import {
   InternalServerException,
 } from "../utils/app-error";
 
+enum UserFacingIntegrationAppTypeEnum {
+  GOOGLE_CALENDAR = "GOOGLE_CALENDAR",
+  GOOGLE_MEET = "GOOGLE_MEET",
+  ZOOM_MEETING = IntegrationAppTypeEnum.ZOOM_MEETING,
+  OUTLOOK_CALENDAR = IntegrationAppTypeEnum.OUTLOOK_CALENDAR,
+  MICROSOFT_TEAMS = IntegrationAppTypeEnum.MICROSOFT_TEAMS,
+}
+
 const appTypeToProviderMap: Record<
-  IntegrationAppTypeEnum,
+  UserFacingIntegrationAppTypeEnum,
   IntegrationProviderEnum
 > = {
-  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]:
+  [UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR]:
     IntegrationProviderEnum.GOOGLE,
-  [IntegrationAppTypeEnum.ZOOM_MEETING]: IntegrationProviderEnum.ZOOM,
+  [UserFacingIntegrationAppTypeEnum.GOOGLE_MEET]:
+    IntegrationProviderEnum.GOOGLE,
+  [UserFacingIntegrationAppTypeEnum.ZOOM_MEETING]: IntegrationProviderEnum.ZOOM,
+  [UserFacingIntegrationAppTypeEnum.OUTLOOK_CALENDAR]:
+    IntegrationProviderEnum.MICROSOFT,
+  [UserFacingIntegrationAppTypeEnum.MICROSOFT_TEAMS]:
+    IntegrationProviderEnum.MICROSOFT,
 };
 
 const appTypeToCategoryMap: Record<
-  IntegrationAppTypeEnum,
+  UserFacingIntegrationAppTypeEnum,
   IntegrationCategoryEnum
 > = {
-  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]:
+  [UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR]:
     IntegrationCategoryEnum.CALENDAR,
-  [IntegrationAppTypeEnum.ZOOM_MEETING]:
+  [UserFacingIntegrationAppTypeEnum.GOOGLE_MEET]:
     IntegrationCategoryEnum.VIDEO_CONFERENCING,
+  [UserFacingIntegrationAppTypeEnum.ZOOM_MEETING]:
+    IntegrationCategoryEnum.VIDEO_CONFERENCING,
+  [UserFacingIntegrationAppTypeEnum.OUTLOOK_CALENDAR]:
+    IntegrationCategoryEnum.CALENDAR,
+  [UserFacingIntegrationAppTypeEnum.MICROSOFT_TEAMS]:
+    IntegrationCategoryEnum.VIDEO_CONFERENCING,
+};
+
+const appTypeToTitleMap: Record<UserFacingIntegrationAppTypeEnum, string> = {
+  [UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR]: "Google Calendar",
+  [UserFacingIntegrationAppTypeEnum.GOOGLE_MEET]: "Google Meet",
+  [UserFacingIntegrationAppTypeEnum.ZOOM_MEETING]: "Zoom",
+  [UserFacingIntegrationAppTypeEnum.OUTLOOK_CALENDAR]: "Outlook Calendar",
+  [UserFacingIntegrationAppTypeEnum.MICROSOFT_TEAMS]: "Microsoft Teams",
 };
 
 export const getUserIntegrationsService = async (userId: string) => {
@@ -35,19 +63,28 @@ export const getUserIntegrationsService = async (userId: string) => {
     const userIntegrations = await integrationRepository.find({
       where: { user: { id: userId } },
     });
-
     // Create a map of connected services
     const connectedMap = new Map(
       userIntegrations.map((integration) => [integration.app_type, true])
     );
-
+    // Mapping for splitting GOOGLE_MEET_AND_CALENDAR
+    const splitAppTypes: Record<string, UserFacingIntegrationAppTypeEnum[]> = {
+      [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]: [
+        UserFacingIntegrationAppTypeEnum.GOOGLE_MEET,
+        UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR,
+      ],
+    };
     // Generate all possible integrations
-    return Object.values(IntegrationAppTypeEnum).map((appType) => ({
-      provider: appTypeToProviderMap[appType],
-      app_type: appType,
-      category: appTypeToCategoryMap[appType],
-      isConnected: connectedMap.has(appType) || false,
-    }));
+    return Object.values(IntegrationAppTypeEnum).flatMap((appType) => {
+      const appTypes = splitAppTypes[appType] || [appType]; // Use split mapping or default to the appType
+      return appTypes.map((type) => ({
+        provider: appTypeToProviderMap[type],
+        title: appTypeToTitleMap[type],
+        app_type: type,
+        category: appTypeToCategoryMap[type],
+        isConnected: connectedMap.has(appType) || false,
+      }));
+    });
   } catch (error) {
     throw new InternalServerException("Failed to fetch user integrations");
   }
