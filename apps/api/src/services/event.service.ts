@@ -1,4 +1,3 @@
-import { AvailabilityResponseType } from "../@types/availability.type";
 import { AppDataSource } from "../config/database.config";
 import { CreateEventDTO, UserNameAndSlugDTO } from "../database/dto/event.dto";
 import {

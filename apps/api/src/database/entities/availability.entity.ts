@@ -27,7 +27,7 @@ export class Availability {
   )
   days: DayAvailability[];
 
-  @Column()
+  @Column({ default: 30 })
   timeGap: number;
 
   @CreateDateColumn()

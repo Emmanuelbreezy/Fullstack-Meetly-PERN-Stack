@@ -10,7 +10,7 @@ const TabHeader = () => {
           <li
             className={`h-full ${
               period === PeriodEnum.UPCOMING
-                ? "border-b-[3px] border-[#006C1F]"
+                ? "border-b-[3px] border-[#006bff]"
                 : ""
             }`}
           >
@@ -24,7 +24,7 @@ const TabHeader = () => {
           <li
             className={`h-full ${
               period === PeriodEnum.PAST
-                ? "border-b-[3px] border-[#006C1F]"
+                ? "border-b-[3px] border-[#006bff]"
                 : ""
             }`}
           >

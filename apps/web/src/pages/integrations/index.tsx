@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import PageTitle from "@/components/PageTitle";
 import IntegrationCard from "./_components/integration-card";
 import { IntegrationTitleType, IntegrationType } from "@/lib/types";
