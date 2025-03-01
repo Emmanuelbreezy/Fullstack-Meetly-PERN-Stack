@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
-    <header className="flex min-h-12 pt-3 shrink-0 items-center transition-[width,height] ease-linear">
+    <header className="flex min-h-10 pt-3 shrink-0 items-center transition-[width,height] ease-linear">
       <div className="w-full flex items-center justify-end !px-4">
         <Popover>
           <PopoverTrigger asChild>

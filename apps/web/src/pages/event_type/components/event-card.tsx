@@ -15,7 +15,7 @@ const EventCard: FC<PropsType> = ({ active = false }) => {
     <div>
       <Card
         className={cn(
-          `!p-0 !ring-0,
+          `!p-0 !ring-0 w-full max-w-[400px]
         box-border min-h-[220px] border border-[#CCCCCC)] bg-white rounded-[4px]
         shadow-[0_1px_6px_0_rgb(0_0_0_/_10%)]`,
           !active && "bg-transparent"
@@ -59,9 +59,10 @@ const EventCard: FC<PropsType> = ({ active = false }) => {
               target="_blank"
               to={`/techwithemma/my-new-one-234?preview_src=et_card`}
               rel="noopener noreferrer"
-              className="pt-2
-            text-[#004eba]
-            "
+              className={cn(
+                `pt-2 text-[#004eba]`,
+                !active && "pointer-events-none opacity-60"
+              )}
             >
               View booking page
             </Link>
@@ -74,7 +75,7 @@ const EventCard: FC<PropsType> = ({ active = false }) => {
           <Button
             variant="ghost"
             disabled={!active}
-            className="flex items-center gap-2 font-light text-sm text-[rgb(0,105,255)]
+            className="flex items-center gap-2 cursor-pointer font-light text-sm text-[rgb(0,105,255)]
             disabled:text-[rgba(26,26,26,0.61)] disabled:bg-[#e7edf6] disabled:opacity-100
                       "
           >
@@ -85,11 +86,11 @@ const EventCard: FC<PropsType> = ({ active = false }) => {
           <Button
             variant="outline"
             className={cn(
-              "!p-[8px_16px] text-sm font-normal !h-auto",
-              !active && "!border-[#476788] !text-[#0a2540]"
+              "!p-[8px_16px] text-sm font-normal !h-auto cursor-pointer",
+              !active && "!border-[#476788] !text-[#0a2540] z-30 "
             )}
           >
-            <span>Turn On</span>
+            <span>Turn {active ? "Off" : "On"}</span>
           </Button>
         </CardFooter>
       </Card>

@@ -8,7 +8,11 @@ const AppLayout = () => {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className={`overflow-x-hidden p-0 !bg-[#fafafa]`}>
-        <div className="flex flex-1 flex-col gap-4 px-3 lg:px-8">
+        <div
+          className="w-full flex flex-1 flex-col gap-1 px-3 lg:px-8 max-w-[1300px]
+         mx-auto
+        "
+        >
           <>
             <Header />
             <div>

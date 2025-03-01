@@ -72,7 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           state !== "collapsed" ? "!px-5" : "!px-3"
         }`}
       >
-        <div className="flex h-[50px] items-center justify-start ">
+        <div className="flex h-[50px] items-center gap-1 justify-start ">
           <div
             className="flex aspect-square size-6 items-center 
           justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
@@ -98,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
-                className="hover:!bg-[#e5efff] focus-within:!bg-[#e5efff]"
+                className="hover:!bg-[#e5efff] data-[active=true]:!bg-[#e5efff]"
                 isActive={item.url === pathname}
                 asChild
               >
