@@ -45,14 +45,6 @@ const Integrations = () => {
       isDisabled: true,
       isConnected: false,
     },
-    {
-      app_type: "MICROSOFT_TEAMS",
-      title: "Microsoft Teams",
-      provider: "Microsoft",
-      category: "VIDEO_CONFERENCING",
-      isDisabled: true,
-      isConnected: false,
-    },
   ];
 
   const groupIntegrationsByCategory = (

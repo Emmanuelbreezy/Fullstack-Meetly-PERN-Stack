@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Popover,
   PopoverTrigger,
@@ -7,18 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { generateTimeSlots } from "@/lib/availability";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   defaultValue?: string;
+  name: string;
   timeGap?: number;
   format?: "12h" | "24h";
+  className?: string;
+  register: any;
   onSelect?: (time: string) => void;
 }
 
 const TimeSelector = ({
+  name,
   timeGap = 15,
   format = "24h",
   defaultValue,
+  register,
+  className,
   onSelect,
 }: Props) => {
   const [open, setOpen] = useState(false);
@@ -34,9 +42,13 @@ const TimeSelector = ({
       <PopoverTrigger asChild>
         <div>
           <Input
-            className="min-h-[46px] px-[14px]
+            {...register(name)}
+            className={cn(
+              `min-h-[46px] px-[14px]
              !py-[10px] !text-[15px] leading-[1.5] cursor-pointer 
-            w-[97px] rounded-[8px] !h-auto"
+            w-[97px] rounded-[8px] !h-auto focus-within:!ring-0`,
+              className && className
+            )}
             placeholder="Time"
             value={defaultValue}
             readOnly

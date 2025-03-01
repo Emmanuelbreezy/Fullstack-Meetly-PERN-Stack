@@ -72,8 +72,8 @@ const IntegrationCard = ({
                 : "#"
             }
             className={`shrink-0 inline-flex items-center 
-              justify-center min-h-[44px] text-sm
-               p-[8px_16px] rounded-full font-bold w-[180px]
+              justify-center min-h-[44px] text-sm font-semibold
+               p-[8px_16px] rounded-full w-[180px]
                ${
                  isDisabled
                    ? "pointer-events-none opacity-80 border border-gray-200 text-muted-foreground bg-transparent"
@@ -81,7 +81,7 @@ const IntegrationCard = ({
                }`}
             aria-disabled={isDisabled}
           >
-            {isDisabled ? "Unavailable" : "Connect"}
+            {isDisabled ? "Not available" : "Connect"}
           </a>
         )}
       </div>

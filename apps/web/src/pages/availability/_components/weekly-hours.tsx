@@ -1,12 +1,19 @@
-import { useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { XIcon } from "lucide-react";
-import TimeSelector from "@/components/TimeSelector";
-import { dayMapping, DayOfWeek } from "@/lib/availability";
+import { z } from "zod";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { dayMapping } from "@/lib/availability";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import DayAvailability from "./day-availability";
 
 const WeeklyHoursRow = () => {
   const dummyAvailability = [
@@ -54,110 +61,147 @@ const WeeklyHoursRow = () => {
     },
   ];
 
-  const [availability, setAvailability] = useState(dummyAvailability);
-  const [timeGap, setTimeGap] = useState(30);
+  const timeGapSchema = z
+    .number()
+    .int({ message: "Time gap must be an integer" })
+    .min(1, { message: "Time gap must be at least 1 minute" })
+    .refine((value) => [15, 30, 45, 60, 120].includes(value), {
+      message: "Time gap must be 15, 30, 45, 60, or 120 minutes",
+    });
 
-  const handleTimeSelect = (
-    day: string,
-    type: "startTime" | "endTime",
-    time: string
-  ) => {
-    setAvailability((prev) =>
-      prev.map((item) => (item.day === day ? { ...item, [type]: time } : item))
-    );
+  const availabilitySchema = z
+    .object({
+      timeGap: timeGapSchema,
+      availability: z.array(
+        z.object({
+          day: z.string(),
+          startTime: z.string().optional(),
+          endTime: z.string().optional(),
+          isAvailable: z.boolean(),
+        })
+      ),
+    })
+    .superRefine((data, ctx) => {
+      data.availability.forEach((item, index) => {
+        if (item.isAvailable && item.startTime && item.endTime) {
+          if (item.endTime <= item.startTime) {
+            // Add error to both startTime and endTime fields
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "End time must be greater than start time",
+              path: ["availability", index, "startTime"],
+            });
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "End time must be greater than start time",
+              path: ["availability", index, "endTime"],
+            });
+          }
+        }
+      });
+    });
+
+  type WeeklyHoursFormData = z.infer<typeof availabilitySchema>;
+
+  const form = useForm<WeeklyHoursFormData>({
+    resolver: zodResolver(availabilitySchema),
+    mode: "onChange",
+    defaultValues: {
+      timeGap: 30,
+      availability: dummyAvailability,
+    },
+  });
+
+  const onSubmit = (data: WeeklyHoursFormData) => {
+    console.log("Form Data:", data);
   };
 
-  const handleToggleAvailability = (day: string) => {
-    setAvailability((prev) =>
-      prev.map((item) =>
-        item.day === day
-          ? {
-              ...item,
-              isAvailable: !item.isAvailable,
-              startTime: !item.isAvailable ? "09:00" : item.startTime,
-              endTime: !item.isAvailable ? "17:00" : item.endTime,
-            }
-          : item
-      )
-    );
+  const handleTimeSelect = useCallback(
+    (day: string, field: "startTime" | "endTime", time: string) => {
+      const index = form
+        .getValues("availability")
+        .findIndex((item) => item.day === day);
+      if (index !== -1) {
+        form.setValue(`availability.${index}.${field}`, time, {
+          shouldValidate: true,
+        });
+        form.trigger(`availability.${index}.startTime`);
+        form.trigger(`availability.${index}.endTime`);
+      }
+    },
+    [form]
+  );
+
+  const onRemove = (day: string) => {
+    const updatedAvailability = form
+      .getValues("availability")
+      .filter((item) => item.day !== day);
+    form.setValue("availability", updatedAvailability, {
+      shouldValidate: true,
+    });
   };
 
-  const handleTimeGapChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    if (!isNaN(value) && value > 0) {
-      setTimeGap(value);
-    }
-  };
+  console.log(form.formState.errors, "errors");
+  console.log(form.getValues(), "getValues");
 
-  const onRemove = () => {};
   return (
-    <div className="space-y-1 pt-0">
-      <div className="flex items-center gap-4 p-5 pb-1">
-        <Label className="text-[15px] font-medium">Time Gap (mins):</Label>
-        <Input
-          type="number"
-          value={timeGap}
-          onChange={handleTimeGapChange}
-          className="w-[100px] !py-[10px] min-h-[46px] px-[14px] !h-auto"
-          min="1"
-        />
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1 pt-0">
+        <div className="pt-0">
+          {/* Time Gap Input */}
+          <FormField
+            name="timeGap"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem className="flex items-center gap-4 p-5 pb-1">
+                <Label className="text-[15px] font-medium shrink-0">
+                  Time Gap (mins):
+                </Label>
+                <div className="relative w-full">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      className="w-[100px] !py-[10px] min-h-[46px]
+                     px-[14px] !h-auto"
+                      min="1"
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        if (!isNaN(value) && value > 0) {
+                          field.onChange(parseInt(e.target.value, 10));
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage className="absolute top-full left-0 mt-2" />
+                </div>
+              </FormItem>
+            )}
+          />
 
-      {availability.map((day) => (
-        <div
-          key={day.day}
-          className="flex items-center gap-10 p-5 min-h-[46px] relative"
-        >
-          <div className="w-[88px] mt-2.5">
-            <Label className="inline-flex items-center cursor-pointer">
-              <div className="mr-2.5">
-                <Switch
-                  checked={day.isAvailable}
-                  onCheckedChange={() => handleToggleAvailability(day.day)}
-                />
-              </div>
-              <span className="text-[15px] font-semibold uppercase">
-                {dayMapping[day.day as DayOfWeek]}
-              </span>
-            </Label>
+          <div className="space-y-5">
+            {form.watch("availability").map((day, index) => (
+              <DayAvailability
+                key={day.day}
+                day={day.day}
+                isAvailable={day.isAvailable}
+                index={index}
+                form={form}
+                dayMapping={dayMapping}
+                onRemove={onRemove}
+                onTimeSelect={handleTimeSelect}
+              />
+            ))}
           </div>
 
-          {day.isAvailable ? (
-            <div className="flex items-center gap-[2px]">
-              <TimeSelector
-                defaultValue={day.startTime}
-                timeGap={timeGap}
-                onSelect={(time) =>
-                  handleTimeSelect(day.day, "startTime", time)
-                }
-              />
-              <Separator className="w-1 bg-[#0a2540]" />
-              <TimeSelector
-                defaultValue={day.endTime}
-                timeGap={timeGap}
-                onSelect={(time) => handleTimeSelect(day.day, "endTime", time)}
-              />
-              <button
-                className="ml-2 cursor-pointer flex items-center 
-              justify-center size-[44px] p-1 rounded-[4px]
-               text-center hover:bg-gray-50"
-                onClick={onRemove}
-              >
-                <XIcon className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <span className="text-base mt-1 text-[rgba(26,26,26,0.61)]">
-              Unavailable
-            </span>
-          )}
+          <div className="w-full pt-8">
+            <Button type="submit" className=" !px-10">
+              Save changes
+            </Button>
+          </div>
         </div>
-      ))}
-
-      <div className="w-full pt-4">
-        <Button className="cursor-pointer !px-10">Save changes</Button>
-      </div>
-    </div>
+      </form>
+    </Form>
   );
 };
 
