@@ -132,14 +132,19 @@ const WeeklyHoursRow = () => {
     [form]
   );
 
-  const onRemove = (day: string) => {
-    const updatedAvailability = form
-      .getValues("availability")
-      .filter((item) => item.day !== day);
-    form.setValue("availability", updatedAvailability, {
-      shouldValidate: true,
-    });
-  };
+  const onRemove = useCallback(
+    (day: string) => {
+      const index = form
+        .getValues("availability")
+        .findIndex((item) => item.day === day);
+      if (index !== -1) {
+        form.setValue(`availability.${index}.isAvailable`, false);
+        form.setValue(`availability.${index}.startTime`, "09:00");
+        form.setValue(`availability.${index}.endTime`, "17:00");
+      }
+    },
+    [form]
+  );
 
   console.log(form.formState.errors, "errors");
   console.log(form.getValues(), "getValues");
