@@ -34,7 +34,7 @@ const Integrations = () => {
       title: "Zoom",
       provider: "Zoom",
       category: "VIDEO_CONFERENCING",
-      isDisabled: false,
+      isDisabled: true,
       isConnected: false,
     },
     {

@@ -2,7 +2,7 @@ import PageTitle from "@/components/PageTitle";
 import { Card, CardContent } from "@/components/ui/card";
 import WeeklyHoursRow from "./_components/weekly-hours";
 import { Separator } from "@/components/ui/separator";
-import { TimerIcon } from "lucide-react";
+import { ClockIcon } from "lucide-react";
 
 const Availability = () => {
   return (
@@ -20,7 +20,7 @@ const Availability = () => {
               <fieldset>
                 <legend>
                   <h3 className="text-lg px-[24px] inline-flex gap-1 font-bold tracking-wide mb-3">
-                    <TimerIcon />
+                    <ClockIcon />
                     <span>Weekly hours</span>
                   </h3>
                 </legend>

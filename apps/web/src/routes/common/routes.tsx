@@ -5,8 +5,8 @@ import EventType from "@/pages/event_type";
 import Meetings from "@/pages/meeting";
 import Availability from "@/pages/availability";
 import Integrations from "@/pages/integrations";
-import UserEventsPage from "@/pages/external/user-events";
-import UserSingleEventPage from "@/pages/external/user-single-event";
+import UserEventsPage from "@/pages/external_page/user-events";
+import UserSingleEventPage from "@/pages/external_page/user-single-event";
 
 export const authenticationRoutePaths = [
   { path: AUTH_ROUTES.SIGN_IN, element: <SignIn /> },

@@ -1,10 +1,10 @@
 import {
   CalendarRange,
+  ClockIcon,
   Command,
   LayoutGrid,
   LinkIcon,
   LucideIcon,
-  TimerIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,9 +55,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Availability",
       url: PROTECTED_ROUTES.AVAILBILITIY,
-      icon: TimerIcon,
+      icon: ClockIcon,
     },
   ];
+
   return (
     <Sidebar
       collapsible="icon"
