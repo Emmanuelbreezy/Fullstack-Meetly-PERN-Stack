@@ -36,3 +36,30 @@ export const IntegrationDescriptions: Record<IntegrationType, string> = {
   OUTLOOK_CALENDAR:
     "Outlook Calendar integration for scheduling and reminders.",
 };
+
+export enum VideoConferencingPlatform {
+  GOOGLE_MEET_AND_CALENDAR = "GOOGLE_MEET_AND_CALENDAR",
+  ZOOM_MEETING = "ZOOM_MEETING",
+  MICROSOFT_TEAMS = "MICROSOFT_TEAMS",
+}
+
+export const locationOptions = [
+  {
+    label: "Google Meet",
+    value: VideoConferencingPlatform.GOOGLE_MEET_AND_CALENDAR,
+    logo: IntegrationLogos.GOOGLE_MEET,
+    isAvailable: true,
+  },
+  {
+    label: "Zoom",
+    value: VideoConferencingPlatform.ZOOM_MEETING,
+    logo: IntegrationLogos.ZOOM_MEETING,
+    isAvailable: false,
+  },
+  {
+    label: "Microsoft",
+    value: VideoConferencingPlatform.MICROSOFT_TEAMS,
+    logo: IntegrationLogos.MICROSOFT_TEAMS,
+    isAvailable: false,
+  },
+];

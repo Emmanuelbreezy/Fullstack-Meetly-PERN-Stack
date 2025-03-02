@@ -22,10 +22,6 @@ export class CreateEventDTO {
   @IsNotEmpty()
   duration: number;
 
-  @IsBoolean()
-  @IsNotEmpty()
-  isPrivate: boolean;
-
   @IsEnum(EventLocationEnumType)
   @IsNotEmpty()
   locationType: EventLocationEnumType;

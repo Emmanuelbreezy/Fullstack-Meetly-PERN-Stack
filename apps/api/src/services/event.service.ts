@@ -17,7 +17,6 @@ export const createEventService = async (
   eventData: CreateEventDTO
 ) => {
   try {
-    console.log(eventData, "eventData");
     const eventRepository = AppDataSource.getRepository(Event);
 
     if (
@@ -30,6 +29,7 @@ export const createEventService = async (
     const event = eventRepository.create({
       ...eventData,
       slug,
+      isPrivate: false,
       user: { id: userId },
     });
     await eventRepository.save(event);

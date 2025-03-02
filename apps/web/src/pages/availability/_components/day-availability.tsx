@@ -37,7 +37,7 @@ const DayAvailability = ({
   onTimeSelect,
 }: DayAvailabilityProps) => {
   return (
-    <div className="flex items-center gap-10 p-5 min-h-[46px] relative">
+    <div className="flex items-center gap-10 p-3 pb-5 px-0 min-h-[40px] relative">
       <div className="w-[88px] mt-2.5">
         <div className="inline-flex items-center cursor-pointer">
           <Switch
@@ -58,8 +58,8 @@ const DayAvailability = ({
 
       {isAvailable ? (
         <>
-          <div className="flex">
-            <div className="relative">
+          <div className="flex-1 relative">
+            <div className="flex gap-2 relative">
               <div className="flex items-center gap-[2px]">
                 <FormField
                   name={`availability.${index}.startTime`}
@@ -113,19 +113,24 @@ const DayAvailability = ({
                   )}
                 />
               </div>
-              {form.formState.errors.availability?.[index]?.endTime && (
-                <FormMessage className="w-full absolute top-full left-0 !mt-1 mb-1">
-                  {form.formState.errors.availability[index].endTime.message}
-                </FormMessage>
-              )}
+              <button
+                className="ml-2 cursor-pointer flex items-center justify-center size-[44px] p-1 rounded-[4px] text-center hover:bg-gray-50"
+                onClick={() => onRemove(day)}
+              >
+                <XIcon className="w-4 h-4" />
+              </button>
             </div>
 
-            <button
-              className="ml-2 cursor-pointer flex items-center justify-center size-[44px] p-1 rounded-[4px] text-center hover:bg-gray-50"
-              onClick={() => onRemove(day)}
-            >
-              <XIcon className="w-4 h-4" />
-            </button>
+            {(form.formState.errors.availability?.[index]?.startTime ||
+              form.formState.errors.availability?.[index]?.endTime) && (
+              <FormMessage
+                className="w-full absolute top-full 
+                left-0 !mt-1 mb-1 text-sm text-destructive"
+              >
+                {form.formState.errors.availability[index].startTime?.message ||
+                  form.formState.errors.availability[index].endTime?.message}
+              </FormMessage>
+            )}
           </div>
         </>
       ) : (

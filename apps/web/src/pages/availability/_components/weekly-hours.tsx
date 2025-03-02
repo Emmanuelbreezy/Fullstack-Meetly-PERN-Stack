@@ -151,59 +151,57 @@ const WeeklyHoursRow = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-1 pt-0">
-        <div className="pt-0">
-          {/* Time Gap Input */}
-          <FormField
-            name="timeGap"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className="flex items-center gap-4 p-5 pb-1">
-                <Label className="text-[15px] font-medium shrink-0">
-                  Time Gap (mins):
-                </Label>
-                <div className="relative w-full">
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      className="w-[100px] !py-[10px] min-h-[46px]
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 pt-0">
+        {/* Time Gap Input */}
+        <FormField
+          name="timeGap"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-4 p-5 pb-1">
+              <Label className="text-[15px] font-medium shrink-0">
+                Time Gap (mins):
+              </Label>
+              <div className="relative w-full">
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    className="w-[100px] !py-[10px] min-h-[46px]
                      px-[14px] !h-auto"
-                      min="1"
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        if (!isNaN(value) && value > 0) {
-                          field.onChange(parseInt(e.target.value, 10));
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage className="absolute top-full left-0 mt-2" />
-                </div>
-              </FormItem>
-            )}
-          />
+                    min="1"
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value, 10);
+                      if (!isNaN(value) && value > 0) {
+                        field.onChange(parseInt(e.target.value, 10));
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage className="absolute top-full left-0 mt-2" />
+              </div>
+            </FormItem>
+          )}
+        />
 
-          <div className="space-y-5">
-            {form.watch("availability").map((day, index) => (
-              <DayAvailability
-                key={day.day}
-                day={day.day}
-                isAvailable={day.isAvailable}
-                index={index}
-                form={form}
-                dayMapping={dayMapping}
-                onRemove={onRemove}
-                onTimeSelect={handleTimeSelect}
-              />
-            ))}
-          </div>
+        <div className="space-y-1">
+          {form.watch("availability").map((day, index) => (
+            <DayAvailability
+              key={day.day}
+              day={day.day}
+              isAvailable={day.isAvailable}
+              index={index}
+              form={form}
+              dayMapping={dayMapping}
+              onRemove={onRemove}
+              onTimeSelect={handleTimeSelect}
+            />
+          ))}
+        </div>
 
-          <div className="w-full pt-8">
-            <Button type="submit" className=" !px-10">
-              Save changes
-            </Button>
-          </div>
+        <div className="w-full pt-4">
+          <Button type="submit" className=" !px-10">
+            Save changes
+          </Button>
         </div>
       </form>
     </Form>

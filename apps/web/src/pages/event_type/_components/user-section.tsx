@@ -1,7 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { ENV } from "@/lib/get-env";
-import { PlusIcon } from "lucide-react";
+import NewEventDialog from "./new-event-dialog";
 
 const UserSection = () => {
   const my_link = `${ENV.APP_ORIGIN}/techwithEmma`;
@@ -40,19 +39,7 @@ const UserSection = () => {
 
       {/* {Create Event } */}
       <div className="flex items-center p-[18px_0]">
-        <Button
-          variant="outline"
-          size="lg"
-          className="!w-auto 
-         !border-[#476788]
-         !text-[#0a2540]
-         !font-normal
-         !text-sm
-        "
-        >
-          <PlusIcon className="w-4 h-4" />
-          <span>New Event Type</span>
-        </Button>
+        <NewEventDialog />
       </div>
     </div>
   );

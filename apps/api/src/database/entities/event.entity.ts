@@ -33,7 +33,7 @@ export class Event {
   @Column({ nullable: false })
   slug: string;
 
-  @Column({ nullable: false, default: true })
+  @Column({ default: true })
   isPrivate: boolean;
 
   @Column({ type: "enum", enum: EventLocationEnumType })
