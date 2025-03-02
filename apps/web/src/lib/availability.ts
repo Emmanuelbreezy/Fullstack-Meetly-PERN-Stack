@@ -30,7 +30,7 @@ export type WeeklyHoursFormData = {
 };
 
 export const generateTimeSlots = (
-  timeGap: number,
+  timeGap: number = 30,
   format: "12h" | "24h" = "24h"
 ) => {
   const slots = [];

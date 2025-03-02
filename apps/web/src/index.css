@@ -24,6 +24,15 @@ body {
   transition: 0.1s ease-in;
 }
 
+.calendar--table thead {
+  height: 40px;
+  margin-bottom: 10px !important;
+}
+
+.calendar--body tr {
+  height: 50px;
+}
+
 :root {
   --background: oklch(1 0 0); /* White */
   --foreground: oklch(0.141 0.005 285.823); /* Dark gray */

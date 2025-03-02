@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Clock } from "lucide-react";
 import PageContainer from "./_components/page-container";
 import { locationOptions } from "@/lib/types";
+import BookingCalendar from "./_components/booking-calendar";
 
 const UserSingleEventPage = () => {
   const param = useParams();
@@ -20,7 +21,7 @@ const UserSingleEventPage = () => {
       justify-stretch p-0 px-1"
       >
         <div
-          className="lg:w-[35%] shrink-0 border-b md:border-r
+          className="lg:w-[35%] shrink-0 border-b border-r-0 md:border-r md:border-b-0
          border-[rgba(26,26,26,0.1)] lg:min-h-[550px]"
         >
           <div
@@ -73,15 +74,9 @@ const UserSingleEventPage = () => {
             </div>
           </div>
         </div>
-        <div className="flex-[1_1_50%] w-[50%] transition-all duration-220 ease-out p-4">
-          <div className="flex flex-col h-full mx-auto pt-[25px]">
-            <h2 className="text-xl mb-5 font-bold">Select a Date &amp; Time</h2>
-            <div className="w-full">
-              <div></div>
-              <div></div>
-            </div>
-          </div>
-        </div>
+
+        {/* {Booking Calendar} */}
+        <BookingCalendar />
       </div>
     </PageContainer>
   );

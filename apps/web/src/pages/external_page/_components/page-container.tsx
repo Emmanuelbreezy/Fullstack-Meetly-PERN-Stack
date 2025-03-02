@@ -1,16 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import React from "react";
 
-const PageContainer = (props: { children: React.ReactNode }) => {
-  const { children } = props;
+const PageContainer = (props: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const { children, className } = props;
   return (
     <div className="w-full">
       <div className="flex items-center justify-center mt-[66px] mb-[30px]">
         <Card
-          className="booking--card md:min-w-[900px] md:max-w-[1060px] min-h-[540px]
-        w-full shadow-[0px_1px_8px_0px_rgba(0,0,0,0.08)] 
+          className={cn(
+            `booking--card w-full md:min-w-[900px] md:max-w-[1000px] min-h-[540px]
+        mx-auto shadow-[0px_1px_8px_0px_rgba(0,0,0,0.08)] 
         border border-[rgba(26,26,26,0.1)] rounded-lg
-        "
+        `,
+            className && className
+          )}
         >
           <CardContent className="relative py-0 px-0">
             <a
