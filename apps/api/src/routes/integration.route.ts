@@ -34,7 +34,7 @@ integrationRoutes.get(
 integrationRoutes.get("/google/callback", googleOAuthCallbackController);
 
 //******* */ Skip this ones ***********************
-integrationRoutes.get(
+integrationRoutes.post(
   "/zoom/connect",
   passportAuthenticateJWT,
   connectZoomController

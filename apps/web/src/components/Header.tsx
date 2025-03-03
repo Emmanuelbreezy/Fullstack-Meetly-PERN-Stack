@@ -1,10 +1,22 @@
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, LogOutIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Separator } from "./ui/separator";
-import { Link } from "react-router-dom";
+import { useStore } from "@/store/store";
+import { AUTH_ROUTES } from "@/routes/common/routePaths";
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { user, setAccessToken, setUser } = useStore();
+
+  const onLogout = () => {
+    setUser(null);
+    setAccessToken(null);
+
+    navigate(AUTH_ROUTES.SIGN_IN);
+  };
+
   return (
     <header className="flex min-h-12 pt-3 pb-4 shrink-0 items-center transition-[width,height] ease-linear">
       <div className="w-full flex items-center justify-end !px-4">
@@ -12,7 +24,9 @@ const Header = () => {
           <PopoverTrigger asChild>
             <button className="flex items-center gap-2 !cursor-pointer">
               <Avatar className="!active:border-1 active:border-primary">
-                <AvatarFallback className="bg-[#e7edf6]">E</AvatarFallback>
+                <AvatarFallback className="bg-[#e7edf6] uppercase">
+                  {user?.name?.charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <ChevronDown className="w-4 h-4 !fill-black" />
             </button>
@@ -33,7 +47,7 @@ const Header = () => {
             >
               <div className="!pb-2">
                 <div className="flex flex-col !p-[8px_16px] text-xl font-bold">
-                  <h3>Emmanuel Umeh </h3>
+                  <h3 className="capitalize">{user?.name}</h3>
                   <p className="text-[#476788] !text-sm !font-normal">
                     Teams free trial
                   </p>
@@ -47,15 +61,15 @@ const Header = () => {
                   </h3>
                 </div>
 
-                <Link
-                  to="#"
+                <button
                   role="menuitem"
-                  className="!p-[12px_16px] font-bold text-sm !text-[#0a2540] 
+                  className="!p-[12px_16px] w-full cursor-pointer font-bold text-sm !text-[#0a2540] 
                   flex items-center gap-2 hover:!bg-[#e5efff]"
+                  onClick={onLogout}
                 >
                   <LogOutIcon className="w-4 h-4 transform rotate-180 !stroke-2" />
                   <span>Logout</span>
-                </Link>
+                </button>
               </div>
             </div>
           </PopoverContent>

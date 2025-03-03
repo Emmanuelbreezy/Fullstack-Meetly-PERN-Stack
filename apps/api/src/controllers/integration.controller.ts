@@ -25,7 +25,7 @@ const oauth2Client = new google.auth.OAuth2(
   config.GOOGLE_REDIRECT_URI
 );
 
-const CLIENT_APP_URL = `${config.FRONTEND_ORIGIN}/integrations`;
+const CLIENT_APP_URL = config.FRONTEND_INTEGRATION_URL;
 
 export const getUserIntegrationsController = asyncHandler(
   async (req: Request, res: Response) => {
@@ -137,6 +137,13 @@ export const googleOAuthCallbackController = asyncHandler(
   }
 );
 
+//*************** */ Skip this once *************************
+//*************** */ Skip this once *************************
+//*************** */ Skip this once *************************
+//*************** */ Skip this once *************************
+//*************** */ Skip this once *************************
+//*************** */ Skip this once *************************
+//*************** */ Skip this once *************************
 //*************** */ Skip this once *************************
 //*************** */ Skip this once *************************
 //*************** */ Skip this once *************************

@@ -12,9 +12,9 @@ type UserType = {
 type AuthState = {
   accessToken: string | null;
   user: UserType | null;
-  setAccessToken: (token: string) => void;
+  setAccessToken: (token: string | null) => void;
   clearAccessToken: () => void;
-  setUser: (user: UserType) => void;
+  setUser: (user: UserType | null) => void;
   clearUser: () => void;
 };
 

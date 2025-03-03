@@ -1,10 +1,10 @@
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ENV } from "@/lib/get-env";
 import {
   IntegrationDescriptions,
   IntegrationLogos,
@@ -27,6 +27,8 @@ const IntegrationCard = ({
 }: IntegrationCardProps) => {
   const logo = IntegrationLogos[appType];
   const description = IntegrationDescriptions[appType];
+
+  const handleConnect = async () => {};
 
   return (
     <Card className="flex w-full items-center justify-between shadow-none border-0">
@@ -63,14 +65,9 @@ const IntegrationCard = ({
             Connected
           </div>
         ) : (
-          <a
-            href={
-              appType == "GOOGLE_MEET"
-                ? `${ENV.API_BASE_URL}/integrations/google/connect`
-                : appType == "GOOGLE_CALENDAR"
-                ? `${ENV.API_BASE_URL}/integrations/google/connect`
-                : "#"
-            }
+          <Button
+            onClick={handleConnect}
+            variant="unstyled"
             className={`shrink-0 inline-flex items-center 
               justify-center min-h-[44px] text-sm font-semibold
                p-[8px_16px] rounded-full w-[180px]
@@ -82,7 +79,7 @@ const IntegrationCard = ({
             aria-disabled={isDisabled}
           >
             {isDisabled ? "Not available" : "Connect"}
-          </a>
+          </Button>
         )}
       </div>
     </Card>

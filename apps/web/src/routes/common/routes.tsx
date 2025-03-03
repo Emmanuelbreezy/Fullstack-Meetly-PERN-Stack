@@ -1,6 +1,6 @@
-import SignIn from "@/pages/auth/Sign-in";
 import { AUTH_ROUTES, PROTECTED_ROUTES, PUBLIC_ROUTES } from "./routePaths";
-import SignUp from "@/pages/auth/Sign-up";
+import SignIn from "@/pages/auth/signin";
+import SignUp from "@/pages/auth/signup";
 import EventType from "@/pages/event_type";
 import Meetings from "@/pages/meeting";
 import Availability from "@/pages/availability";

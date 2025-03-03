@@ -15,68 +15,61 @@ import {
 } from "../database/entities/day-availability.entity";
 
 export const registerService = async (userData: RegisterDTO) => {
-  try {
-    const userRepository = AppDataSource.getRepository(User);
-    const availabilityRepository = AppDataSource.getRepository(Availability);
-    const dayAvailabilityRepository =
-      AppDataSource.getRepository(DayAvailability);
+  const userRepository = AppDataSource.getRepository(User);
+  const availabilityRepository = AppDataSource.getRepository(Availability);
+  const dayAvailabilityRepository =
+    AppDataSource.getRepository(DayAvailability);
 
-    const existingUser = await userRepository.findOne({
-      where: { email: userData.email },
-    });
-    if (existingUser) {
-      throw new NotFoundException("User already exists");
-    }
-    const username = await generateUsername(userData.name);
-    const user = userRepository.create({
-      ...userData,
-      username: username,
-    });
+  const existingUser = await userRepository.findOne({
+    where: { email: userData.email },
+  });
 
-    const availability = availabilityRepository.create({
-      timeGap: 30, // Default time gap in minutes
-      days: Object.values(DayOfWeekEnum).map((day) => {
-        return dayAvailabilityRepository.create({
-          day: day,
-          startTime: new Date(`1970-01-01T09:00:00Z`), // 09:00 AM
-          endTime: new Date(`1970-01-01T17:00:00Z`), // 05:00 PM
-          isAvailable:
-            day !== DayOfWeekEnum.SATURDAY && day !== DayOfWeekEnum.SUNDAY,
-        });
-      }),
-    });
-
-    user.availability = availability;
-    await userRepository.save(user);
-
-    return { user: user.omitPassword() };
-  } catch (error) {
-    throw new InternalServerException();
+  if (existingUser) {
+    throw new NotFoundException("User already exists");
   }
+  const username = await generateUsername(userData.name);
+  const user = userRepository.create({
+    ...userData,
+    username: username,
+  });
+
+  const availability = availabilityRepository.create({
+    timeGap: 30, // Default time gap in minutes
+    days: Object.values(DayOfWeekEnum).map((day) => {
+      return dayAvailabilityRepository.create({
+        day: day,
+        startTime: new Date(`1970-01-01T09:00:00Z`), // 09:00 AM
+        endTime: new Date(`1970-01-01T17:00:00Z`), // 05:00 PM
+        isAvailable:
+          day !== DayOfWeekEnum.SATURDAY && day !== DayOfWeekEnum.SUNDAY,
+      });
+    }),
+  });
+
+  user.availability = availability;
+  await userRepository.save(user);
+
+  return { user: user.omitPassword() };
 };
 
 export const loginService = async (userData: LoginDTO) => {
-  try {
-    const { email, password } = userData;
-    const userRepository = AppDataSource.getRepository(User);
+  const { email, password } = userData;
+  const userRepository = AppDataSource.getRepository(User);
 
-    const user = await userRepository.findOne({
-      where: { email: email },
-    });
-    if (!user) {
-      throw new NotFoundException("User not found");
-    }
-    // Compare the provided password with the hashed password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException("Email/Password not correct");
-    }
-
-    const accessToken = signJwtToken({ userId: user.id });
-    return { user: user.omitPassword(), accessToken };
-  } catch (error) {
-    throw new InternalServerException();
+  const user = await userRepository.findOne({
+    where: { email: email },
+  });
+  if (!user) {
+    throw new NotFoundException("User not found");
   }
+  // Compare the provided password with the hashed password
+  const isPasswordValid = await user.comparePassword(password);
+  if (!isPasswordValid) {
+    throw new UnauthorizedException("Email/Password not correct");
+  }
+
+  const accessToken = signJwtToken({ userId: user.id });
+  return { user: user.omitPassword(), accessToken };
 };
 
 const generateUsername = async (name: string): Promise<string> => {

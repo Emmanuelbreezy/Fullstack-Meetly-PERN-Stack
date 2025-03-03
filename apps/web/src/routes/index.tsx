@@ -13,12 +13,6 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<BaseLayout />}>
-          {publicRoutePaths.map((route) => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
-        </Route>
-
         <Route path="/" element={<AuthRoute />}>
           <Route element={<BaseLayout />}>
             {authenticationRoutePaths.map((route) => (
@@ -29,6 +23,12 @@ function AppRoutes() {
               />
             ))}
           </Route>
+        </Route>
+
+        <Route path="/" element={<BaseLayout />}>
+          {publicRoutePaths.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
         </Route>
 
         {/* Protected Route */}

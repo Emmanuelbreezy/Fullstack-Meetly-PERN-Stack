@@ -41,11 +41,12 @@ export const loginController = asyncHandler(
     "body"
   )(async (req: Request, res: Response) => {
     const loginDTO = req.dto as LoginDTO;
-    const data = await loginService(loginDTO);
+    const { user, accessToken } = await loginService(loginDTO);
 
     return res.status(HTTPSTATUS.OK).json({
       message: "User logged in successfully",
-      data,
+      user,
+      accessToken,
     });
   })
 );

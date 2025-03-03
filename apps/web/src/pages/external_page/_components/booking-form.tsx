@@ -79,6 +79,10 @@ const BookingForm = (props: { eventId: string; timeGap: number }) => {
             You are scheduled
           </h2>
           <p className="mb-4">Your meeting has been scheduled successfully.</p>
+          <p className="flex items-center text-sm  justify-center gap-2 mb-4">
+            Copy link:
+            <span className="font-normal text-primary">{meetLink}</span>
+          </p>
           <a href={meetLink} target="_blank" rel="noopener noreferrer">
             <Button>
               <ExternalLink className="w-4 h-4" />
