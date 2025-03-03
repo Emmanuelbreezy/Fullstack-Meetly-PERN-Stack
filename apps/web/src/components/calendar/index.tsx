@@ -4,11 +4,14 @@ import { CalendarProps, DateValue, useCalendar, useLocale } from "react-aria";
 import CalendarHeader from "./calendar-header";
 import CalendarBody from "./calender-body";
 
-export function Calendar(
-  props: CalendarProps<DateValue> & {
-    isDateUnavailable?: (date: DateValue) => boolean;
-  }
-) {
+interface CalendarExtendedProps extends CalendarProps<DateValue> {
+  isDateUnavailable?: (date: DateValue) => boolean;
+}
+
+export function Calendar({
+  isDateUnavailable,
+  ...props
+}: CalendarExtendedProps) {
   const { locale } = useLocale();
   const state = useCalendarState({
     ...props,
@@ -30,10 +33,7 @@ export function Calendar(
         nextButtonProps={nextButtonProps}
       />
       <div className="flex gap-3">
-        <CalendarBody
-          state={state}
-          isDateUnavailable={props.isDateUnavailable}
-        />
+        <CalendarBody state={state} isDateUnavailable={isDateUnavailable} />
       </div>
     </div>
   );

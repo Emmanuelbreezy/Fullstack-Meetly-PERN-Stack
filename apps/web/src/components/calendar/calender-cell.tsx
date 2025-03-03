@@ -39,7 +39,10 @@ const CalendarCell = ({
       className={`py-0.5 px-0.5 relative ${isFocusVisible ? "z-10" : "z-0"}`}
     >
       <div
-        {...mergeProps(buttonProps, focusProps)}
+        {...mergeProps(
+          finalIsDisabled ? {} : buttonProps, // Only apply buttonProps if the cell is not disabled
+          finalIsDisabled ? {} : focusProps // Only apply focusProps if the cell is not disabled
+        )}
         ref={ref}
         hidden={isOutsideMonth}
         className="size-10 sm:size-[44px] outline-none group !rounded-full"
@@ -47,7 +50,9 @@ const CalendarCell = ({
         <div
           className={cn(
             "size-full rounded-full cursor-pointer flex items-center justify-center text-[15px] font-semibold",
-            finalIsDisabled ? "text-muted-foreground pointer-events-none" : "",
+            finalIsDisabled
+              ? "!opacity-80 text-muted-foreground pointer-events-none"
+              : "cursor-pointer",
             isFocusVisible ? "group-focus:z-2 ring-gray-12 ring-offset-1" : "",
             isSelected ? "bg-primary text-white" : "",
             !isSelected && !finalIsDisabled

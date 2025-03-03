@@ -39,7 +39,9 @@ const CalendarHeader = ({
       <CalendarButton
         {...prevButtonProps}
         className="relative z-10 inline-flex justify-center items-center 
-        w-[38px] h-[38px] rounded-full bg-[rgba(0,105,255,0.065)] text-[#0060d4]/80 "
+        w-[38px] h-[38px] rounded-full bg-[rgba(0,105,255,0.065)] text-[#0060d4]/80 
+        disabled:!bg-transparent disabled:!text-muted-foreground
+        "
       >
         <ChevronLeftIcon className="!w-5 !h-5" />
       </CalendarButton>
