@@ -99,8 +99,8 @@ export const createMeetBookingForGuestService = async (
       requestBody: {
         summary: `${guestName} - ${event.title}`,
         description: additionalInfo,
-        start: { dateTime: startTime.toISOString() },
-        end: { dateTime: endTime.toISOString() },
+        start: { dateTime: startTime.toISOString() }, // UTC time
+        end: { dateTime: endTime.toISOString() }, // UTC time
         attendees: [{ email: guestEmail }, { email: event.user.email }],
         conferenceData: {
           createRequest: { requestId: `${event.id}-${Date.now()}` },

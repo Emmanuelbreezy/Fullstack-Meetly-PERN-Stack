@@ -76,13 +76,8 @@ const UserSingleEventPage = () => {
     <PageContainer
       className={cn(`!min-w-auto sm:!w-auto`, selectedDate && "sm:!w-[98%]")}
     >
-      <div
-        className="w-full flex flex-col md:flex-row items-stretch 
-      justify-stretch p-0 px-1"
-      >
+      <div className="w-full flex flex-col md:flex-row items-stretch justify-stretch p-0 px-1">
         {/* {Event Details} */}
-        {/* {Event Details} */}
-
         <EventDetails
           timeGap={30}
           username={username || ""}
@@ -94,7 +89,7 @@ const UserSingleEventPage = () => {
           {next ? (
             <Fragment>
               {/* {Booking Form} */}
-              <BookingForm />
+              <BookingForm eventId="opdpdpd" timeGap={30} />
             </Fragment>
           ) : (
             <Fragment>

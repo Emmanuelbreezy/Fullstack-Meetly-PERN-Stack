@@ -18,6 +18,11 @@ export const useBookingState = () => {
     parseAsBoolean.withDefault(false)
   );
 
+  const [isSuccess, setIsSuccess] = useQueryState(
+    "success",
+    parseAsBoolean.withDefault(false)
+  );
+
   const handleSelectDate = (date: CalendarDate) => {
     setSelectedDate(date);
   };
@@ -45,13 +50,19 @@ export const useBookingState = () => {
     setNext(false);
   };
 
+  const handleSuccess = (value: boolean) => {
+    setIsSuccess(value || true);
+  };
+
   return {
     selectedDate,
     selectedSlot,
     next: next,
+    isSuccess,
     handleSelectDate,
     handleSelectSlot,
     handleNext,
     handleBack,
+    handleSuccess,
   };
 };

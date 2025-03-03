@@ -16,17 +16,21 @@ const EventDetails = (props: {
 }) => {
   const { timeGap, username, locationOption } = props;
 
-  const { next, selectedSlot, handleBack } = useBookingState();
+  const { next, isSuccess, selectedSlot, handleBack } = useBookingState();
 
   const navigate = useNavigate();
 
   const handleClick = () => {
+    if (isSuccess) {
+      navigate(`/${username}`);
+    }
     if (next) {
       handleBack();
       return;
     }
     navigate(`/${username}`);
   };
+
   return (
     <div
       className="sm:w-96 flex-shrink-0 border-b border-r-0 md:border-r md:border-b-0
@@ -57,7 +61,7 @@ const EventDetails = (props: {
           >
             TechwithEmma Subscribe
           </div>
-          <h1 className="font-bold text-2xl my-2 leading-[32px] text-[#3c3e44]">
+          <h1 className="font-bold text-2xl my-2 leading-[32px] text-[#0a2540]">
             Client Meeting
           </h1>
 
