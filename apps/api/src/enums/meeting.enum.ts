@@ -1,7 +1,7 @@
 export const MeetingFilterEnum = {
-  UPCOMING: "upcoming",
-  PAST: "past",
-  ALL: "all",
+  UPCOMING: "UPCOMING",
+  PAST: "PAST",
+  CANCELLED: "CANCELLED",
 } as const;
 
 export type MeetingFilterEnumType =

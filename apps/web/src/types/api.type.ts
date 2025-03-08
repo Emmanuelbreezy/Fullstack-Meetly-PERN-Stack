@@ -90,6 +90,28 @@ export interface UserAvailabilityResponseType {
   };
 }
 
+//************************* Meetings */
+type MeetingStatus = "SCHEDULED" | "CANCELLED" | "COMPLETED";
+
+export interface MeetingType {
+  id: string;
+  guestName: string;
+  guestEmail: string;
+  additionalInfo: string;
+  startTime: string;
+  endTime: string;
+  meetLink: string;
+  calendarEventId: string;
+  status: MeetingStatus;
+  createdAt: string;
+  updatedAt: string;
+  event: EventType;
+}
+export interface UserMeetingsResponseType {
+  message: string;
+  meetings: MeetingType[];
+}
+
 //************ALL PUBLIC API TYPES */
 
 export interface PublicEventResponseType {

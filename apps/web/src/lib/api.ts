@@ -12,6 +12,7 @@ import {
   ToggleEventVisibilityResponseType,
   UserAvailabilityResponseType,
   UserEventListResponse,
+  UserMeetingsResponseType,
 } from "@/types/api.type";
 import { API, PublicAPI } from "./axios-client";
 import { VideoConferencingPlatform } from "./types";
@@ -74,6 +75,17 @@ export const updateUserAvailabilityMutationFn = async (
   data: AvailabilityType
 ) => {
   const response = await API.put("/availability/update", data);
+  return response.data;
+};
+
+//*********** */ Meeting APIS
+
+export const getUserMeetingsQueryFn = async (
+  filter: "UPCOMING" | "PAST"
+): Promise<UserMeetingsResponseType> => {
+  const response = await API.get(
+    `/meeting/user/all${filter ? `?filter=${filter}` : ""}`
+  );
   return response.data;
 };
 

@@ -1,19 +1,28 @@
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { ChevronDown, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MeetingType } from "@/types/api.type";
+import { format, parseISO } from "date-fns";
+import { locationOptions } from "@/lib/types";
 
-const details = [
-  { label: "Email", value: "subscribeto@techwithemma.com" },
-  { label: "Location", value: "No location given" },
-  {
-    label: "Questions",
-    value: "Nothing",
-  },
-];
+const MeetingCard = (props: { meeting: MeetingType }) => {
+  const { meeting } = props;
 
-const MeetingCard = () => {
   const [isShow, setIsShow] = useState(false);
   const detailsRef = useRef<HTMLDivElement>(null);
+
+  // Format the date and time
+  const startTime = parseISO(meeting.startTime);
+  const endTime = parseISO(meeting.endTime);
+  const formattedDate = format(startTime, "EEEE, d MMMM yyyy"); // e.g., "Wednesday, 19 March 2025"
+  const formattedTime = `${format(startTime, "h:mm a")} – ${format(
+    endTime,
+    "h:mm a"
+  )}`;
+
+  const locationOption = locationOptions.find(
+    (option) => option.value === meeting.event.locationType
+  );
 
   const toggleDetails = () => {
     setIsShow(!isShow);
@@ -24,7 +33,7 @@ const MeetingCard = () => {
         className="day-header p-[16px_24px] border-y
       border-[#D4E16F] bg-[#fafafa] text-base font-bold tracking-wide"
       >
-        Wednesday, 19 March 2025
+        {formattedDate}
       </h2>
 
       {/* {Event body} */}
@@ -38,7 +47,7 @@ const MeetingCard = () => {
             className="flex-shrink-0 box-border pr-4 pl-10 inline-block
           mb-[5px]"
           >
-            <span className="event-time">11:00 - 11:30</span>
+            <span className="event-time">{formattedTime}</span>
             <span
               className="absolute bg-primary/70
               top-[19px] left-[23px] inline-block box-border w-[30px]
@@ -48,10 +57,10 @@ const MeetingCard = () => {
 
           <div className="flex-1">
             <h5>
-              <strong>Boniface</strong>
+              <strong>{meeting.guestName}</strong>
             </h5>
             <p>
-              Event type <strong> my new one</strong>
+              Event type <strong> {meeting.event.title}</strong>
             </p>
           </div>
           {/* {Meeting detail Button} */}
@@ -93,22 +102,49 @@ const MeetingCard = () => {
           </div>
           <div className="flex-1">
             <ul>
-              {details.map((item, index) => (
-                <li key={index} className="mb-4">
-                  <h5 className="inline-block mb-1 font-bold text-sm leading-[14px] uppercase">
-                    {item.label}
-                  </h5>
-                  <p className="font-normal text-[15px]">
-                    {item.label === "Questions" && (
-                      <span className="block font-light text-sm mb-1 text-[rgba(26,26,26,0.61))]">
+              <li className="mb-4">
+                <h5 className="inline-block mb-1 font-bold text-sm leading-[14px] uppercase">
+                  Email
+                </h5>
+                <p className="font-normal text-[15px]">{meeting.guestEmail}</p>
+              </li>
+              <li className="mb-4">
+                <h5 className="inline-block mb-1 font-bold text-sm leading-[14px] uppercase">
+                  Location
+                </h5>
+                <div className="flex items-center mr-6">
+                  {locationOption && (
+                    <>
+                      <img
+                        src={locationOption?.logo as string}
+                        alt={locationOption?.label}
+                        className="w-5 h-5 mr-2"
+                      />
+                      <span className="mt-1 font-normal text-[15px]">
+                        {locationOption?.label}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </li>
+              <li className="mb-4">
+                <h5 className="inline-block mb-1 font-bold text-sm leading-[14px] uppercase">
+                  Questions
+                </h5>
+                <p className="font-normal text-[15px]">
+                  {meeting.additionalInfo ? (
+                    meeting.additionalInfo
+                  ) : (
+                    <Fragment>
+                      <span className="block font-light text-sm mb-1 text-[rgba(26,26,26,0.61)]">
                         Please share anything that will help prepare for our
                         meeting.
                       </span>
-                    )}
-                    {item.value}
-                  </p>
-                </li>
-              ))}
+                      <span>Nothing</span>
+                    </Fragment>
+                  )}
+                </p>
+              </li>
             </ul>
           </div>
         </div>

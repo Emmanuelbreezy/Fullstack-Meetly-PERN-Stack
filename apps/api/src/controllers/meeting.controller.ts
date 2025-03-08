@@ -18,7 +18,7 @@ export const getUserMeetingsController = asyncHandler(
     const userId = req.user?.id as string;
 
     const filter =
-      (req.query.filter as MeetingFilterEnumType) || MeetingFilterEnum.ALL;
+      (req.query.filter as MeetingFilterEnumType) || MeetingFilterEnum.UPCOMING;
 
     // Fetch the meetings
     const meetings = await getUserMeetingsService(userId, filter);

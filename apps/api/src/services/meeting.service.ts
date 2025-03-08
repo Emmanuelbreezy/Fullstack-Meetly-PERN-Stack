@@ -22,19 +22,22 @@ import { oauth2Client } from "../utils/google-oauth";
 
 export const getUserMeetingsService = async (
   userId: string,
-  filter: MeetingFilterEnumType = MeetingFilterEnum.ALL
+  filter: MeetingFilterEnumType
 ): Promise<Meeting[]> => {
   const meetingRepository = AppDataSource.getRepository(Meeting);
-  // Define the query options
-  const where: any = {
-    user: { id: userId },
-    status: MeetingStatus.SCHEDULED,
-  };
+  const where: any = { user: { id: userId } };
   // Apply the filter
   if (filter === MeetingFilterEnum.UPCOMING) {
+    where.status = MeetingStatus.SCHEDULED;
     where.startTime = MoreThan(new Date()); // Only upcoming meetings
   } else if (filter === MeetingFilterEnum.PAST) {
+    where.status = MeetingStatus.SCHEDULED;
     where.startTime = LessThan(new Date()); // Only past meetings
+  } else if (filter === MeetingFilterEnum.CANCELLED) {
+    where.status = MeetingStatus.CANCELLED; // Only canceled meetings
+  } else {
+    where.status = MeetingStatus.SCHEDULED;
+    where.startTime = MoreThan(new Date()); // Default to upcoming meetings
   }
   // Fetch the meetings
   const meetings = await meetingRepository.find({
@@ -43,13 +46,11 @@ export const getUserMeetingsService = async (
     order: { startTime: "ASC" }, // Sort by start time
   });
 
-  if (!meetings || meetings.length === 0) {
-    return [];
-  }
-
-  return meetings;
+  return meetings || []; // Return an empty array if no meetings are found
 };
 
+//***************  CreateMeetBookingForGuestService */
+//***************  CreateMeetBookingForGuestService */
 export const createMeetBookingForGuestService = async (
   bookingData: CreateMeetingDTO
 ) => {
@@ -138,6 +139,9 @@ export const createMeetBookingForGuestService = async (
   };
 };
 
+//***************  cancelMeetingService */
+//***************  cancelMeetingService */
+
 export const cancelMeetingService = async (meetingId: string) => {
   const meetingRepository = AppDataSource.getRepository(Meeting);
   const integrationRepository = AppDataSource.getRepository(Integration);
@@ -191,7 +195,7 @@ export const cancelMeetingService = async (meetingId: string) => {
     throw new BadRequestException("Failed to delete event from calendar");
   }
   // Step 5: Delete the meeting
-  meeting.status = MeetingStatus.CANCELED;
+  meeting.status = MeetingStatus.CANCELLED;
   await meetingRepository.save(meeting);
 
   return { success: true };
