@@ -11,7 +11,8 @@ const options = {
   timeout: 10000,
 };
 
-const API = axios.create(options);
+//*** FOR API WITH TOKEN */
+export const API = axios.create(options);
 
 API.interceptors.request.use((config) => {
   const accessToken = useStore.getState().accessToken;
@@ -22,14 +23,18 @@ API.interceptors.request.use((config) => {
 });
 
 API.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
-    const { data } = error.response;
-    // if (data === "Unauthorized" && status === 401) {
-    //   window.location.href = "/";
-    // }
+    const { data, status } = error.response;
+    if (data === "Unauthorized" && status === 401) {
+      const store = useStore.getState();
+      store.clearUser();
+      store.clearAccessToken();
+      store.clearExpiresAt();
+      window.location.href = "/";
+    }
+
+    console.log(data, "data");
     const customError: CustomError = {
       ...error,
       message: data?.message,
@@ -40,4 +45,18 @@ API.interceptors.response.use(
   }
 );
 
-export default API;
+//*** FOR API DONT NEED TOKEN */
+export const PublicAPI = axios.create(options);
+
+PublicAPI.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const { data } = error.response;
+    const customError: CustomError = {
+      ...error,
+      message: data?.message,
+      errorCode: data?.errorCode || "UNKNOWN_ERROR",
+    };
+    return Promise.reject(customError);
+  }
+);

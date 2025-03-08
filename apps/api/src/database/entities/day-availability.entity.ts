@@ -10,13 +10,13 @@ import {
 import { Availability } from "./availability.entity";
 
 export enum DayOfWeekEnum {
+  SUNDAY = "SUNDAY",
   MONDAY = "MONDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
   THURSDAY = "THURSDAY",
   FRIDAY = "FRIDAY",
   SATURDAY = "SATURDAY",
-  SUNDAY = "SUNDAY",
 }
 
 @Entity()

@@ -1,40 +1,82 @@
 import { format } from "date-fns";
 import { Calendar } from "@/components/calendar";
-import { DateValue, getLocalTimeZone } from "@internationalized/date";
+import {
+  CalendarDate,
+  DateValue,
+  getLocalTimeZone,
+} from "@internationalized/date";
 import { useBookingState } from "@/hooks/use-booking-state";
+import { decodeSlot } from "@/lib/helper";
+import { getPublicAvailabilityByEventIdQueryFn } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { ErrorAlert } from "@/components/ErrorAlert";
+import { Loader } from "@/components/loader";
 
 interface BookingCalendarProps {
-  timeSlots: string[];
+  eventId: string;
   minValue?: DateValue;
   defaultValue?: DateValue;
-  value: DateValue | null;
-  onChange: (date: DateValue) => void;
-  isDateUnavailable?: (date: DateValue) => boolean;
 }
 
 const BookingCalendar = ({
-  timeSlots,
+  eventId,
   minValue,
   defaultValue,
-  value,
-  onChange,
-  isDateUnavailable,
 }: BookingCalendarProps) => {
-  const { selectedDate, selectedSlot, handleSelectSlot, handleNext } =
-    useBookingState();
-  //const timeSlots = generateTimeSlots();
+  const {
+    selectedDate,
+    selectedSlot,
+    handleSelectDate,
+    handleSelectSlot,
+    handleNext,
+  } = useBookingState();
+  //const [date, setDate] = useState<CalendarDate>(today(getLocalTimeZone()));
 
-  const decodeSlot = (encodedSlot: string | null) => {
-    if (!encodedSlot) return null;
-    const decodedSlot = decodeURIComponent(encodedSlot); // Decode the slot
-    const time = decodedSlot.slice(11, 16); // Extract the time (e.g., "09:00")
-    return time;
+  const { data, isFetching, isError, error } = useQuery({
+    queryKey: ["availbility_single_event"],
+    queryFn: () => getPublicAvailabilityByEventIdQueryFn(eventId),
+  });
+
+  const availability = data?.data || [];
+
+  // Get time slots for the selected date
+  const timeSlots = selectedDate
+    ? availability?.find(
+        (day) =>
+          day.day ===
+          format(selectedDate.toDate(getLocalTimeZone()), "EEEE").toUpperCase()
+      )?.slots || []
+    : [];
+
+  const isDateUnavailable = (date: DateValue) => {
+    // Step 1: Get the day of the week (e.g., "MONDAY")
+    const dayOfWeek = format(
+      date.toDate(getLocalTimeZone()),
+      "EEEE"
+    ).toUpperCase();
+    // Step 2: Check if the day is available
+    const dayAvailability = availability.find((day) => day.day === dayOfWeek);
+    return !dayAvailability?.isAvailable;
+  };
+
+  const handleChangeDate = (newDate: DateValue) => {
+    const calendarDate = newDate as CalendarDate;
+    //setDate(calendarDate); // Update local state
+    handleSelectSlot(null);
+    handleSelectDate(calendarDate); // Update useBookingState hook
   };
 
   const selectedTime = decodeSlot(selectedSlot);
 
   return (
-    <div className="flex-[1_1_50%] w-full flex-shrink-0 transition-all duration-220 ease-out p-4 pr-0">
+    <div className="relative flex-[1_1_50%] w-full flex-shrink-0 transition-all duration-220 ease-out p-4 pr-0">
+      {/* Loader Overlay */}
+      {isFetching && (
+        <div className="flex bg-white/60 !z-30 absolute w-[95%] h-full items-center justify-center">
+          <Loader size="lg" color="black" />
+        </div>
+      )}
+
       <div className="flex flex-col h-full mx-auto pt-[25px]">
         <h2 className="text-xl mb-5 font-bold">Select a Date &amp; Time</h2>
         <div className="w-full flex flex-row flex-[1_1_300px]">
@@ -42,12 +84,12 @@ const BookingCalendar = ({
             <Calendar
               minValue={minValue}
               defaultValue={defaultValue}
-              value={value}
-              onChange={onChange}
+              value={selectedDate}
+              onChange={handleChangeDate}
               isDateUnavailable={isDateUnavailable}
             />
           </div>
-          {selectedDate && (
+          {selectedDate && availability ? (
             <div className="w-full flex-shrink-0 max-w-[40%] pt-0 overflow-hidden md:ml-[19px]">
               <h3 className="h-[38px] mt-0 mb-[10px] font-normal text-base leading-[38px]">
                 {format(
@@ -109,9 +151,12 @@ const BookingCalendar = ({
                 })}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
+
+      {/* {Error Alert } */}
+      <ErrorAlert isError={isError} error={error} />
     </div>
   );
 };

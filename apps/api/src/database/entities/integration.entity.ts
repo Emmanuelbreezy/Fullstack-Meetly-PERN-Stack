@@ -18,12 +18,9 @@ export enum IntegrationProviderEnum {
 
 export enum IntegrationAppTypeEnum {
   GOOGLE_MEET_AND_CALENDAR = "GOOGLE_MEET_AND_CALENDAR",
-  // GOOGLE_CALENDAR = "GOOGLE_CALENDAR",
-  // GOOGLE_MEET = "GOOGLE_MEET",
   ZOOM_MEETING = "ZOOM_MEETING",
   //skip
   OUTLOOK_CALENDAR = "OUTLOOK_CALENDAR",
-  MICROSOFT_TEAMS = "MICROSOFT_TEAMS",
 }
 
 export enum IntegrationCategoryEnum {
@@ -33,8 +30,8 @@ export enum IntegrationCategoryEnum {
 }
 
 interface GoogleMeetMetadata {
-  email: string;
   scope: string;
+  token_type: string;
 }
 
 interface GoogleCalendarMetadata extends GoogleMeetMetadata {}
@@ -60,6 +57,9 @@ export class Integration {
 
   @Column({ nullable: true })
   refresh_token: string;
+
+  @Column({ type: "bigint", nullable: true })
+  expiry_date: number | null;
 
   @Column({ type: "json" })
   metadata: IntegrationMetadata;

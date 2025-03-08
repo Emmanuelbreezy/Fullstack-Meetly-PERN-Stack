@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 
 interface DayAvailabilityProps {
   day: string;
+  startTime: string;
+  endTime: string;
   isAvailable: boolean;
   index: number;
   form: any;
@@ -43,10 +45,10 @@ const DayAvailability = ({
           <Switch
             checked={isAvailable}
             onCheckedChange={(checked) => {
-              form.setValue(`availability.${index}.isAvailable`, checked);
+              form.setValue(`days.${index}.isAvailable`, checked);
               if (!checked) {
-                form.setValue(`availability.${index}.startTime`, "09:00");
-                form.setValue(`availability.${index}.endTime`, "17:00");
+                form.setValue(`days.${index}.startTime`, "09:00");
+                form.setValue(`days.${index}.endTime`, "17:00");
               }
             }}
           />
@@ -62,13 +64,13 @@ const DayAvailability = ({
             <div className="flex gap-2 relative">
               <div className="flex items-center gap-[2px]">
                 <FormField
-                  name={`availability.${index}.startTime`}
+                  name={`days.${index}.startTime`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <TimeSelector
-                          name={`availability.${index}.startTime`}
+                          name={`days.${index}.startTime`}
                           defaultValue={field.value}
                           timeGap={form.watch("timeGap")}
                           register={form.register}
@@ -88,13 +90,13 @@ const DayAvailability = ({
                 />
                 <Separator className="w-1 bg-[#0a2540]" />
                 <FormField
-                  name={`availability.${index}.endTime`}
+                  name={`days.${index}.endTime`}
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <TimeSelector
-                          name={`availability.${index}.endTime`}
+                          name={`days.${index}.endTime`}
                           defaultValue={field.value}
                           timeGap={form.watch("timeGap")}
                           register={form.register}
@@ -121,14 +123,14 @@ const DayAvailability = ({
               </button>
             </div>
 
-            {(form.formState.errors.availability?.[index]?.startTime ||
-              form.formState.errors.availability?.[index]?.endTime) && (
+            {(form.formState.errors.days?.[index]?.startTime ||
+              form.formState.errors.days?.[index]?.endTime) && (
               <FormMessage
                 className="w-full absolute top-full 
                 left-0 !mt-1 mb-1 text-sm text-destructive"
               >
-                {form.formState.errors.availability[index].startTime?.message ||
-                  form.formState.errors.availability[index].endTime?.message}
+                {form.formState.errors.days?.[index]?.startTime?.message ||
+                  form.formState.errors.days?.[index]?.endTime?.message}
               </FormMessage>
             )}
           </div>

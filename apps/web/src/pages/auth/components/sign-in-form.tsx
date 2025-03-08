@@ -33,7 +33,8 @@ export function SignInForm({
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const navigate = useNavigate();
-  const { setAccessToken, setUser } = useStore();
+
+  const { setUser, setAccessToken, setExpiresAt } = useStore();
 
   const { mutate, isPending } = useMutation({
     mutationFn: loginMutationFn,
@@ -54,11 +55,13 @@ export function SignInForm({
 
     mutate(values, {
       onSuccess: (data) => {
-        const accessToken = data.accessToken;
         const user = data.user;
+        const accessToken = data.accessToken;
+        const expiresAt = data.expiresAt;
 
         setUser(user);
         setAccessToken(accessToken);
+        setExpiresAt(expiresAt);
         toast.success("Login successfully");
 
         navigate(PROTECTED_ROUTES.EVENT_TYPES);

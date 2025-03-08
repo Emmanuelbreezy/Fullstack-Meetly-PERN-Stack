@@ -39,11 +39,16 @@ export const createMeetBookingForGuestController = asyncHandler(
     const createMeetingDTO = req.dto;
 
     // Create the meeting
-    const meeting = await createMeetBookingForGuestService(createMeetingDTO);
+    const { meetLink, meeting } = await createMeetBookingForGuestService(
+      createMeetingDTO
+    );
 
     return res.status(HTTPSTATUS.CREATED).json({
       message: "Meeting created successfully",
-      meeting,
+      data: {
+        meetLink,
+        meeting,
+      },
     });
   })
 );

@@ -1,111 +1,84 @@
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { useParams } from "react-router-dom";
-import {
-  today,
-  getLocalTimeZone,
-  DateValue,
-  CalendarDate,
-} from "@internationalized/date";
-
+import { today, getLocalTimeZone } from "@internationalized/date";
+import { useQuery } from "@tanstack/react-query";
 import PageContainer from "./_components/page-container";
-import { locationOptions } from "@/lib/types";
 import BookingCalendar from "./_components/booking-calendar";
 import BookingForm from "./_components/booking-form";
 import { useBookingState } from "@/hooks/use-booking-state";
-import { format } from "date-fns";
-import { generateTimeSlots } from "@/lib/availability";
-import { cn } from "@/lib/utils";
 import EventDetails from "./_components/event-details";
-
-const slots = generateTimeSlots();
-const availability = [
-  { day: "MONDAY", isAvailable: true, slots: slots },
-  { day: "TUESDAY", isAvailable: false, slots: [] },
-  {
-    day: "WEDNESDAY",
-    isAvailable: true,
-    slots: ["09:00", "10:00", "11:00"],
-  },
-  { day: "THURSDAY", isAvailable: true, slots: ["14:00", "15:00"] },
-  { day: "FRIDAY", isAvailable: true, slots: ["13:00", "14:00"] },
-  { day: "SATURDAY", isAvailable: false, slots: [] },
-  { day: "SUNDAY", isAvailable: false, slots: [] },
-];
+import { getSinglePublicEventBySlugQueryFn } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { ErrorAlert } from "@/components/ErrorAlert";
+import { Loader } from "@/components/loader";
 
 const UserSingleEventPage = () => {
   const param = useParams();
-  const username = param.username;
-  const [date, setDate] = useState<CalendarDate>(today(getLocalTimeZone()));
-  const { next, selectedDate, handleSelectDate, handleSelectSlot } =
-    useBookingState();
+  const username = param.username as string;
+  const slug = param.slug as string;
 
-  const eventLocationType = "GOOGLE_MEET_AND_CALENDAR";
+  const { next, selectedDate } = useBookingState();
 
-  const locationOption = locationOptions.find(
-    (option) => option.value === eventLocationType
-  );
+  const { data, isFetching, isLoading, isError, error } = useQuery({
+    queryKey: ["public_single_event"],
+    queryFn: () =>
+      getSinglePublicEventBySlugQueryFn({
+        username,
+        slug,
+      }),
+  });
 
-  // Get time slots for the selected date
-  const timeSlots = selectedDate
-    ? availability.find(
-        (day) =>
-          day.day ===
-          format(selectedDate.toDate(getLocalTimeZone()), "EEEE").toUpperCase()
-      )?.slots || []
-    : [];
-
-  const handleChangeDate = (newDate: DateValue) => {
-    const calendarDate = newDate as CalendarDate;
-    setDate(calendarDate); // Update local state
-    handleSelectSlot(null);
-    handleSelectDate(calendarDate); // Update useBookingState hook
-  };
-
-  const isDateUnavailable = (date: DateValue) => {
-    // Step 1: Get the day of the week (e.g., "MONDAY")
-    const dayOfWeek = format(
-      date.toDate(getLocalTimeZone()),
-      "EEEE"
-    ).toUpperCase();
-    // Step 2: Check if the day is available
-    const dayAvailability = availability.find((day) => day.day === dayOfWeek);
-    return !dayAvailability?.isAvailable;
-  };
+  const event = data?.event;
 
   return (
     <PageContainer
-      className={cn(`!min-w-auto sm:!w-auto`, selectedDate && "sm:!w-[98%]")}
+      isLoading={isLoading}
+      className={cn(
+        `!min-w-auto sm:!w-auto`,
+        isFetching || isError ? "sm:!min-w-[72%]" : "",
+        selectedDate && "sm:!w-[98%]"
+      )}
     >
-      <div className="w-full flex flex-col md:flex-row items-stretch justify-stretch p-0 px-1">
-        {/* {Event Details} */}
-        <EventDetails
-          timeGap={30}
-          username={username || ""}
-          locationOption={locationOption}
-        />
-        {/* {Calendar & Booking form} */}
-        {/* {Calendar & Booking form} */}
-        <div className="min-w-sm max-w-3xl flex-shrink-0 flex-1">
-          {next ? (
-            <Fragment>
-              {/* {Booking Form} */}
-              <BookingForm eventId="opdpdpd" timeGap={30} />
-            </Fragment>
-          ) : (
-            <Fragment>
-              {/* {Booking Calendar} */}
-              <BookingCalendar
-                timeSlots={timeSlots}
-                minValue={today(getLocalTimeZone())}
-                defaultValue={today(getLocalTimeZone())}
-                value={selectedDate || date}
-                onChange={handleChangeDate}
-                isDateUnavailable={isDateUnavailable}
-              />
-            </Fragment>
-          )}
+      {/* {Error Alert } */}
+      <ErrorAlert isError={isError} error={error} />
+
+      {isFetching || isError ? (
+        <div className="flex items-center justify-center min-h-[15vh]">
+          <Loader size="lg" color="black" />
         </div>
-      </div>
+      ) : (
+        event && (
+          <div className="w-full flex flex-col md:flex-row items-stretch justify-stretch p-0 px-1">
+            {/* {Event Details} */}
+            <EventDetails
+              eventTitle={event?.title}
+              user={event?.user}
+              eventLocationType={event?.locationType}
+              username={username || ""}
+              duration={event?.duration}
+            />
+            {/* {Calendar & Booking form} */}
+            {/* {Calendar & Booking form} */}
+            <div className="min-w-sm max-w-3xl flex-shrink-0 flex-1">
+              {next ? (
+                <Fragment>
+                  {/* {Booking Form} */}
+                  <BookingForm eventId={event.id} duration={event.duration} />
+                </Fragment>
+              ) : (
+                <Fragment>
+                  {/* {Booking Calendar} */}
+                  <BookingCalendar
+                    eventId={event.id}
+                    minValue={today(getLocalTimeZone())}
+                    defaultValue={today(getLocalTimeZone())}
+                  />
+                </Fragment>
+              )}
+            </div>
+          </div>
+        )
+      )}
     </PageContainer>
   );
 };

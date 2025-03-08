@@ -26,25 +26,33 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { PROTECTED_ROUTES } from "@/routes/common/routePaths";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { checkIntegrationQueryFn, CreateEventMutationFn } from "@/lib/api";
+import { toast } from "sonner";
+import { Loader } from "@/components/loader";
 
-type Errortype = {
-  googleError: string | null;
-  zoomError: string | null;
-};
+const NewEventDialog = (props: { btnVariant?: string }) => {
+  const { btnVariant } = props;
 
-const NewEventDialog = () => {
-  const [selectedLocationType, setSelectedLocationType] =
-    useState<VideoConferencingPlatform | null>(null);
-  const [error, setError] = useState<Errortype>({
-    googleError: `Google meet is not connected. 
-    <a href=${PROTECTED_ROUTES.INTEGRATIONS} target="_blank" class='underline text-primary'>Visit the integration page</a>  
-    to connect your account.`,
-    zoomError: null,
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: CreateEventMutationFn,
   });
 
+  const [selectedLocationType, setSelectedLocationType] =
+    useState<VideoConferencingPlatform | null>(null);
+
+  const [error, setError] = useState<string | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
+  const [appConnected, setAppConnected] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
   const eventSchema = z.object({
-    eventName: z.string().min(1, "Event name is required"),
-    duration: z.string().min(1, "Duration is required"),
+    title: z.string().min(1, "Event name is required"),
+    duration: z
+      .number()
+      .int({ message: "Duration must be a number" })
+      .min(1, "Duration is required"),
     description: z.string().optional(),
     locationType: z
       .enum([
@@ -63,8 +71,8 @@ const NewEventDialog = () => {
     resolver: zodResolver(eventSchema),
     mode: "onChange",
     defaultValues: {
-      eventName: "",
-      duration: "",
+      title: "",
+      duration: 30,
       description: "",
     },
   });
@@ -73,38 +81,72 @@ const NewEventDialog = () => {
 
   const handleLocationTypeChange = async (value: VideoConferencingPlatform) => {
     setSelectedLocationType(value);
+    setAppConnected(false);
+
     if (value === VideoConferencingPlatform.GOOGLE_MEET_AND_CALENDAR) {
-      // Check if Google Meet is integrated
-      //   const isGoogleMeetIntegrated = await checkGoogleMeetIntegration();
-      //   if (!isGoogleMeetIntegrated) {
-      //     setGoogleMeetError(
-      //       "You must configure your calendar connections to set events to a Google Calendar to host Google Meet web conferences on your events."
-      //     );
-      //     return;
-      //   }
-      // }
-      //Google meet is not connected. Visit the integration page to connect your account.
-      // Clear error and set value in the form
-      setError((prev) => ({
-        ...prev,
-        googleError: null,
-      }));
+      setIsChecking(true);
+      try {
+        const { isConnected } = await checkIntegrationQueryFn(
+          VideoConferencingPlatform.GOOGLE_MEET_AND_CALENDAR
+        );
+
+        if (!isConnected) {
+          setError(
+            `Google Meet is not connected. <a href=${PROTECTED_ROUTES.INTEGRATIONS} target="_blank" class='underline text-primary'>Visit the integration page</a> to connect your account.`
+          );
+          return;
+        }
+        setError(null);
+        setAppConnected(true);
+        form.setValue("locationType", value);
+        form.trigger("locationType");
+      } catch (error) {
+        console.log(error);
+        setError("Failed to check Google Meet integration status.");
+      } finally {
+        setIsChecking(false);
+      }
+    } else {
+      setError(null);
       form.setValue("locationType", value);
     }
   };
 
   const onSubmit = (data: EventFormData) => {
     console.log("Form Data:", data);
-    // Save changes logic here
+    mutate(
+      {
+        ...data,
+        duration: data.duration,
+        description: data.description || "",
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["event_list"],
+          });
+          setSelectedLocationType(null);
+          setIsOpen(false);
+          form.reset();
+          toast.success("Event created successfully");
+        },
+        onError: () => {
+          toast.success("Failed to create event");
+        },
+      }
+    );
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="outline"
+          variant={btnVariant ? "default" : "outline"}
           size="lg"
-          className="!w-auto !border-[#476788] !text-[#0a2540] !font-normal !text-sm"
+          className={cn(
+            `!w-auto !border-[#476788] !text-[#0a2540] !font-normal !text-sm`,
+            btnVariant && "!text-white !border-primary"
+          )}
         >
           <PlusIcon className="w-4 h-4" />
           <span>New Event Type</span>
@@ -121,7 +163,7 @@ const NewEventDialog = () => {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="space-y-4 px-6">
               <FormField
-                name="eventName"
+                name="title"
                 control={form.control}
                 render={({ field }) => (
                   <FormItem>
@@ -161,7 +203,17 @@ const NewEventDialog = () => {
                   <FormItem>
                     <Label className="font-semibold !text-base">Duration</Label>
                     <FormControl className="mt-2">
-                      <Input placeholder="Duration" {...field} />
+                      <Input
+                        {...field}
+                        type="number"
+                        placeholder="Duration"
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10);
+                          if (!isNaN(value) && value > 0) {
+                            field.onChange(parseInt(e.target.value, 10));
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -183,35 +235,54 @@ const NewEventDialog = () => {
                             key={option.value}
                             type="button"
                             className={cn(
-                              "w-full h-[70px] cursor-pointer border border-[#B2B2B2] mx-auto pt-1 pr-0.5 pl-0.5 rounded-[5px] flex flex-col items-center justify-center",
+                              `w-full h-[70px] cursor-pointer border disabled:pointer-events-none border-[#B2B2B2] mx-auto pt-1 pr-0.5 pl-0.5 rounded-[5px] flex flex-col items-center justify-center`,
                               selectedLocationType === option.value &&
                                 "border-primary bg-primary/10",
                               !option.isAvailable &&
                                 "pointer-events-none !text-gray-400 opacity-80 grayscale",
-                              !!error &&
-                                "!border-destructive !bg-destructive/10"
+                              selectedLocationType === option.value &&
+                                !!error &&
+                                "!border-destructive !bg-destructive/10",
+                              appConnected &&
+                                selectedLocationType === option.value &&
+                                "!border-green-500 !bg-green-50"
                             )}
-                            onClick={() =>
-                              handleLocationTypeChange(option.value)
-                            }
+                            disabled={isChecking}
+                            onClick={() => {
+                              if (
+                                !appConnected &&
+                                selectedLocationType !== option.value
+                              ) {
+                                handleLocationTypeChange(option.value);
+                              }
+                            }}
                           >
-                            <img
-                              src={option.logo}
-                              alt={option.label}
-                              width="20px"
-                              height="20px"
-                            />
-                            <span className="mt-1 text-sm">{option.label}</span>
+                            {isChecking &&
+                            selectedLocationType === option.value ? (
+                              <Loader size="sm" />
+                            ) : (
+                              <>
+                                <img
+                                  src={option.logo as string}
+                                  alt={option.label}
+                                  width="20px"
+                                  height="20px"
+                                />
+                                <span className="mt-1 text-sm">
+                                  {option.label}
+                                </span>
+                              </>
+                            )}
                           </button>
                         ))}
                       </div>
                     </FormControl>
 
-                    {error?.googleError ? (
+                    {error ? (
                       <FormMessage>
                         <span
                           dangerouslySetInnerHTML={{
-                            __html: error.googleError,
+                            __html: error,
                           }}
                         />
                       </FormMessage>
@@ -227,8 +298,12 @@ const NewEventDialog = () => {
               className="bg-[#f6f7f9] border-t px-6 py-3 !mt-6
              border-[#e5e7eb] rounded-b-[8px]"
             >
-              <Button type="submit" disabled={!isValid}>
-                Create
+              <Button type="submit" disabled={!isValid || isPending}>
+                {isPending ? (
+                  <Loader size="sm" color="white" />
+                ) : (
+                  <span>Create</span>
+                )}
               </Button>
             </DialogFooter>
           </form>

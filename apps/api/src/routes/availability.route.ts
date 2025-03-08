@@ -9,7 +9,7 @@ import { passportAuthenticateJWT } from "../config/passport.config";
 const availabilityRoutes = Router();
 
 availabilityRoutes.get(
-  "/user",
+  "/me",
   passportAuthenticateJWT,
   getUserAvailabilityController
 );

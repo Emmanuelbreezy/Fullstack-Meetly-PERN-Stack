@@ -19,7 +19,7 @@ export const Loader = ({
   }[size];
 
   const dotColor = {
-    black: "bg-gray-900",
+    black: "bg-gray-700",
     white: "bg-white",
   }[color];
 

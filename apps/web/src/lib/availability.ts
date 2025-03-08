@@ -1,13 +1,6 @@
-export type DayOfWeek =
-  | "SUNDAY"
-  | "MONDAY"
-  | "TUESDAY"
-  | "WEDNESDAY"
-  | "THURSDAY"
-  | "FRIDAY"
-  | "SATURDAY";
+import { DayOfWeekType } from "@/types/api.type";
 
-export const dayMapping: Record<DayOfWeek, string> = {
+export const dayMapping: Record<DayOfWeekType, string> = {
   SUNDAY: "Sun",
   MONDAY: "Mon",
   TUESDAY: "Tue",
@@ -18,7 +11,7 @@ export const dayMapping: Record<DayOfWeek, string> = {
 };
 
 export type Availability = {
-  day: DayOfWeek;
+  day: DayOfWeekType;
   startTime: string;
   endTime: string;
   isAvailable: boolean;
@@ -53,3 +46,17 @@ export const generateTimeSlots = (
 
   return slots;
 };
+
+export const availabilityPlaceholder = [
+  { day: "MONDAY", isAvailable: true, slots: [] },
+  { day: "TUESDAY", isAvailable: true, slots: [] },
+  {
+    day: "WEDNESDAY",
+    isAvailable: true,
+    slots: [],
+  },
+  { day: "THURSDAY", isAvailable: true, slots: [] },
+  { day: "FRIDAY", isAvailable: true, slots: [] },
+  { day: "SATURDAY", isAvailable: false, slots: [] },
+  { day: "SUNDAY", isAvailable: false, slots: [] },
+];

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { addMinutes, parseISO } from "date-fns";
+import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,20 @@ import { useBookingState } from "@/hooks/use-booking-state";
 import { Fragment } from "react/jsx-runtime";
 import { useState } from "react";
 import { CheckIcon, ExternalLink } from "lucide-react";
+import { scheduleMeetingMutationFn } from "@/lib/api";
+import { toast } from "sonner";
+import { Loader } from "@/components/loader";
 
-const BookingForm = (props: { eventId: string; timeGap: number }) => {
-  const { eventId, timeGap } = props;
-  const [meetLink] = useState("https://meet.google.com/abc-defg-hij");
+const BookingForm = (props: { eventId: string; duration: number }) => {
+  const { eventId, duration } = props;
+  const [meetLink, setMeetLink] = useState("");
 
   const { selectedDate, isSuccess, selectedSlot, handleSuccess } =
     useBookingState();
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: scheduleMeetingMutationFn,
+  });
 
   const bookingFormSchema = z.object({
     guestName: z.string().min(1, "Name is required"),
@@ -44,7 +52,6 @@ const BookingForm = (props: { eventId: string; timeGap: number }) => {
 
   const onSubmit = (values: BookingFormData) => {
     if (!eventId || !selectedSlot || !selectedDate) return;
-
     // Step 2: Decode the selected slot to get the slotDate
     // (e.g., "2025-03-20T14:00:00.000Z")
     const decodedSlotDate = decodeURIComponent(selectedSlot);
@@ -52,9 +59,10 @@ const BookingForm = (props: { eventId: string; timeGap: number }) => {
     // Step 3: Parse the slotDate into a Date object using date-fns
     const startTime = parseISO(decodedSlotDate);
 
-    // Step 4: Calculate the end time by adding the timeGap (in minutes)
+    // Step 4: Calculate the end time by adding the
+    // duration of event (in minutes)
     // to the start time
-    const endTime = addMinutes(startTime, timeGap);
+    const endTime = addMinutes(startTime, duration);
 
     const payload = {
       ...values,
@@ -63,8 +71,20 @@ const BookingForm = (props: { eventId: string; timeGap: number }) => {
       endTime: endTime.toISOString(), // Convert start time to ISO string (UTC)
     };
     console.log("Form Data:", payload);
-    handleSuccess(true);
-    // Handle form submission logic here
+
+    if (isPending) return;
+
+    mutate(payload, {
+      onSuccess: (response) => {
+        console.log(response);
+        setMeetLink(response.data.meetLink);
+        handleSuccess(true);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.message || "Failed to schedule event");
+      },
+    });
   };
 
   return (
@@ -151,7 +171,9 @@ const BookingForm = (props: { eventId: string; timeGap: number }) => {
               />
 
               {/* Submit Button */}
-              <Button type="submit">Schedule Meeting</Button>
+              <Button disabled={isPending} type="submit">
+                {isPending ? <Loader color="white" /> : "Schedule Meeting"}
+              </Button>
             </form>
           </Form>
         </Fragment>

@@ -17,6 +17,8 @@ import {
   Event,
   EventLocationEnumType,
 } from "../database/entities/event.entity";
+import { validateGoogleToken } from "./integration.service";
+import { oauth2Client } from "../utils/google-oauth";
 
 export const getUserMeetingsService = async (
   userId: string,
@@ -89,9 +91,11 @@ export const createMeetBookingForGuestService = async (
 
   if (event.locationType === EventLocationEnumType.GOOGLE_MEET_AND_CALENDAR) {
     // Create Google Meet link
-    const { calendar } = getCalendarClient(
+    const { calendar } = await getCalendarClient(
       meetIntegration.app_type,
-      meetIntegration.access_token
+      meetIntegration.access_token,
+      meetIntegration.refresh_token,
+      meetIntegration.expiry_date
     );
     const meetResponse = await calendar.events.insert({
       calendarId: "primary",
@@ -165,9 +169,11 @@ export const cancelMeetingService = async (meetingId: string) => {
 
     if (calendarIntegration) {
       // Step 3: Initialize the calendar client dynamically
-      const { calendar, calendarType } = getCalendarClient(
+      const { calendar, calendarType } = await getCalendarClient(
         calendarIntegration.app_type,
-        calendarIntegration.access_token
+        calendarIntegration.access_token,
+        calendarIntegration.refresh_token,
+        calendarIntegration.expiry_date
       );
       switch (calendarType) {
         case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR:
@@ -191,14 +197,20 @@ export const cancelMeetingService = async (meetingId: string) => {
   return { success: true };
 };
 
-function getCalendarClient(
+async function getCalendarClient(
   appType: IntegrationAppTypeEnum,
-  accessToken: string
+  access_token: string,
+  refresh_token: string,
+  expiry_date: number | null
 ) {
   switch (appType) {
     case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR:
-      const oauth2Client = new google.auth.OAuth2();
-      oauth2Client.setCredentials({ access_token: accessToken });
+      const validToken = await validateGoogleToken(
+        access_token,
+        refresh_token,
+        expiry_date
+      );
+      oauth2Client.setCredentials({ access_token: validToken });
       const calendar = google.calendar({ version: "v3", auth: oauth2Client });
       return {
         calendar,

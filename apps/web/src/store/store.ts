@@ -10,21 +10,29 @@ type UserType = {
 };
 
 type AuthState = {
-  accessToken: string | null;
   user: UserType | null;
-  setAccessToken: (token: string | null) => void;
-  clearAccessToken: () => void;
+  accessToken: string | null;
+  expiresAt: number | null;
   setUser: (user: UserType | null) => void;
+  setAccessToken: (token: string | null) => void;
+  setExpiresAt: (expiresAt: number | null) => void;
+
   clearUser: () => void;
+  clearAccessToken: () => void;
+  clearExpiresAt: () => void;
 };
 
 const createAuthSlice: StateCreator<AuthState> = (set) => ({
-  accessToken: null,
   user: null,
+  accessToken: null,
+  expiresAt: null,
   setAccessToken: (token) => set({ accessToken: token }),
-  clearAccessToken: () => set({ accessToken: null }),
+  setExpiresAt: (expiresAt: number | null) => set({ expiresAt }),
   setUser: (user) => set({ user }),
+
   clearUser: () => set({ user: null }),
+  clearAccessToken: () => set({ accessToken: null }),
+  clearExpiresAt: () => set({ expiresAt: null }),
 });
 
 type StoreType = AuthState;
@@ -37,7 +45,7 @@ export const useStoreBase = create<StoreType>()(
       })),
       {
         name: "session-storage",
-        getStorage: () => sessionStorage,
+        getStorage: () => localStorage,
       }
     )
   )

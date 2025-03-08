@@ -68,8 +68,12 @@ export const loginService = async (userData: LoginDTO) => {
     throw new UnauthorizedException("Email/Password not correct");
   }
 
-  const accessToken = signJwtToken({ userId: user.id });
-  return { user: user.omitPassword(), accessToken };
+  const { token, expiresAt } = signJwtToken({ userId: user.id });
+  return {
+    user: user.omitPassword(),
+    accessToken: token,
+    expiresAt,
+  };
 };
 
 const generateUsername = async (name: string): Promise<string> => {

@@ -22,7 +22,7 @@ interface Props {
 
 const TimeSelector = ({
   name,
-  timeGap = 15,
+  timeGap = 30,
   format = "24h",
   defaultValue,
   register,

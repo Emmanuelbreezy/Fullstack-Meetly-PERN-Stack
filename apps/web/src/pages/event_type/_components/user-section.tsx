@@ -3,9 +3,10 @@ import { ENV } from "@/lib/get-env";
 import NewEventDialog from "./new-event-dialog";
 import { useStore } from "@/store/store";
 
-const UserSection = () => {
+const UserSection = (props: { username: string }) => {
   const { user } = useStore();
-  const my_link = `${ENV.VITE_APP_ORIGIN}/${user?.username || "my_username"}`;
+  const username = props.username || user?.username;
+  const my_link = `${ENV.VITE_APP_ORIGIN}/${username}`;
   return (
     <div
       className="w-full flex flex-wrap items-center justify-between 

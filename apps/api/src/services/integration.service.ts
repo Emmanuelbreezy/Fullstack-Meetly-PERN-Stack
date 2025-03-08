@@ -9,52 +9,33 @@ import {
   BadRequestException,
   InternalServerException,
 } from "../utils/app-error";
-
-enum UserFacingIntegrationAppTypeEnum {
-  GOOGLE_CALENDAR = "GOOGLE_CALENDAR",
-  GOOGLE_MEET = "GOOGLE_MEET",
-  ZOOM_MEETING = IntegrationAppTypeEnum.ZOOM_MEETING,
-  OUTLOOK_CALENDAR = IntegrationAppTypeEnum.OUTLOOK_CALENDAR,
-  MICROSOFT_TEAMS = IntegrationAppTypeEnum.MICROSOFT_TEAMS,
-}
+import { oauth2Client } from "../utils/google-oauth";
 
 const appTypeToProviderMap: Record<
-  UserFacingIntegrationAppTypeEnum,
+  IntegrationAppTypeEnum,
   IntegrationProviderEnum
 > = {
-  [UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR]:
+  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]:
     IntegrationProviderEnum.GOOGLE,
-  [UserFacingIntegrationAppTypeEnum.GOOGLE_MEET]:
-    IntegrationProviderEnum.GOOGLE,
-  [UserFacingIntegrationAppTypeEnum.ZOOM_MEETING]: IntegrationProviderEnum.ZOOM,
-  [UserFacingIntegrationAppTypeEnum.OUTLOOK_CALENDAR]:
-    IntegrationProviderEnum.MICROSOFT,
-  [UserFacingIntegrationAppTypeEnum.MICROSOFT_TEAMS]:
-    IntegrationProviderEnum.MICROSOFT,
+  [IntegrationAppTypeEnum.ZOOM_MEETING]: IntegrationProviderEnum.ZOOM,
+  [IntegrationAppTypeEnum.OUTLOOK_CALENDAR]: IntegrationProviderEnum.MICROSOFT,
 };
 
 const appTypeToCategoryMap: Record<
-  UserFacingIntegrationAppTypeEnum,
+  IntegrationAppTypeEnum,
   IntegrationCategoryEnum
 > = {
-  [UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR]:
-    IntegrationCategoryEnum.CALENDAR,
-  [UserFacingIntegrationAppTypeEnum.GOOGLE_MEET]:
+  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]:
+    IntegrationCategoryEnum.CALENDAR_AND_VIDEO_CONFERENCING,
+  [IntegrationAppTypeEnum.ZOOM_MEETING]:
     IntegrationCategoryEnum.VIDEO_CONFERENCING,
-  [UserFacingIntegrationAppTypeEnum.ZOOM_MEETING]:
-    IntegrationCategoryEnum.VIDEO_CONFERENCING,
-  [UserFacingIntegrationAppTypeEnum.OUTLOOK_CALENDAR]:
-    IntegrationCategoryEnum.CALENDAR,
-  [UserFacingIntegrationAppTypeEnum.MICROSOFT_TEAMS]:
-    IntegrationCategoryEnum.VIDEO_CONFERENCING,
+  [IntegrationAppTypeEnum.OUTLOOK_CALENDAR]: IntegrationCategoryEnum.CALENDAR,
 };
 
-const appTypeToTitleMap: Record<UserFacingIntegrationAppTypeEnum, string> = {
-  [UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR]: "Google Calendar",
-  [UserFacingIntegrationAppTypeEnum.GOOGLE_MEET]: "Google Meet",
-  [UserFacingIntegrationAppTypeEnum.ZOOM_MEETING]: "Zoom",
-  [UserFacingIntegrationAppTypeEnum.OUTLOOK_CALENDAR]: "Outlook Calendar",
-  [UserFacingIntegrationAppTypeEnum.MICROSOFT_TEAMS]: "Microsoft Teams",
+const appTypeToTitleMap: Record<IntegrationAppTypeEnum, string> = {
+  [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]: "Google Meet & Calendar",
+  [IntegrationAppTypeEnum.ZOOM_MEETING]: "Zoom",
+  [IntegrationAppTypeEnum.OUTLOOK_CALENDAR]: "Outlook Calendar",
 };
 
 export const getUserIntegrationsService = async (userId: string) => {
@@ -67,23 +48,16 @@ export const getUserIntegrationsService = async (userId: string) => {
     const connectedMap = new Map(
       userIntegrations.map((integration) => [integration.app_type, true])
     );
-    // Mapping for splitting GOOGLE_MEET_AND_CALENDAR
-    const splitAppTypes: Record<string, UserFacingIntegrationAppTypeEnum[]> = {
-      [IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR]: [
-        UserFacingIntegrationAppTypeEnum.GOOGLE_MEET,
-        UserFacingIntegrationAppTypeEnum.GOOGLE_CALENDAR,
-      ],
-    };
+
     // Generate all possible integrations
     return Object.values(IntegrationAppTypeEnum).flatMap((appType) => {
-      const appTypes = splitAppTypes[appType] || [appType]; // Use split mapping or default to the appType
-      return appTypes.map((type) => ({
-        provider: appTypeToProviderMap[type],
-        title: appTypeToTitleMap[type],
-        app_type: type,
-        category: appTypeToCategoryMap[type],
+      return {
+        provider: appTypeToProviderMap[appType],
+        title: appTypeToTitleMap[appType],
+        app_type: appType,
+        category: appTypeToCategoryMap[appType],
         isConnected: connectedMap.has(appType) || false,
-      }));
+      };
     });
   } catch (error) {
     throw new InternalServerException("Failed to fetch user integrations");
@@ -102,10 +76,10 @@ export const checkUserIntegrationService = async (
     });
 
     if (!integration) {
-      return false; // Integration not found
+      return false;
     }
 
-    return true; // Integration found
+    return true;
   } catch (error) {
     throw new InternalServerException("Failed to check integration");
   }
@@ -118,6 +92,7 @@ export const createIntegrationService = async (data: {
   app_type: IntegrationAppTypeEnum;
   access_token: string;
   refresh_token?: string;
+  expiry_date: number | null;
   metadata: any;
 }) => {
   try {
@@ -140,6 +115,7 @@ export const createIntegrationService = async (data: {
       app_type: data.app_type,
       access_token: data.access_token,
       refresh_token: data.refresh_token,
+      expiry_date: data.expiry_date,
       metadata: data.metadata,
       userId: data.userId,
       isConnected: true,
@@ -150,4 +126,19 @@ export const createIntegrationService = async (data: {
   } catch (error) {
     throw new InternalServerException();
   }
+};
+
+// Validate the Google access token and refresh it if expired
+export const validateGoogleToken = async (
+  accessToken: string,
+  refreshToken: string,
+  expiryDate: number | null
+) => {
+  // If expiryDate is null, assume the token is expired
+  if (expiryDate === null || Date.now() >= expiryDate) {
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
+    const { credentials } = await oauth2Client.refreshAccessToken();
+    return credentials.access_token;
+  }
+  return accessToken;
 };

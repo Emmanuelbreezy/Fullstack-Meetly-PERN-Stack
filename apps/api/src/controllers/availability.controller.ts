@@ -35,15 +35,7 @@ export const updateAvailabilityController = asyncHandler(
   )(async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
 
-    const updateAvailabilityDto = plainToInstance(
-      UpdateAvailabilityDto,
-      req.body
-    );
-
-    const errors = await validate(updateAvailabilityDto);
-    if (errors?.length > 0) {
-      formatValidationError(res, errors);
-    }
+    const updateAvailabilityDto = req.dto as UpdateAvailabilityDto;
 
     await updateAvailabilityService(userId, updateAvailabilityDto);
 

@@ -18,12 +18,14 @@ import {
 import { HTTPSTATUS } from "../config/http.config";
 import { withValidation } from "../middlewares/withValidation.middleware";
 import { AppTypeDTO } from "../database/dto/integration.dto";
+import { oauth2Client } from "../utils/google-oauth";
 
-const oauth2Client = new google.auth.OAuth2(
-  config.GOOGLE_CLIENT_ID,
-  config.GOOGLE_CLIENT_SECRET,
-  config.GOOGLE_REDIRECT_URI
-);
+//NOW in utils/google-oauth
+// export const oauth2Client = new google.auth.OAuth2(
+//   config.GOOGLE_CLIENT_ID,
+//   config.GOOGLE_CLIENT_SECRET,
+//   config.GOOGLE_REDIRECT_URI
+// );
 
 const CLIENT_APP_URL = config.FRONTEND_INTEGRATION_URL;
 
@@ -72,13 +74,14 @@ export const connectGoogleController = asyncHandler(
       access_type: "offline", // Request a refresh token
       scope: [
         "https://www.googleapis.com/auth/calendar.events", // Calendar scope
-        "https://www.googleapis.com/auth/meetings.space.readonly", // Google Meet scope
       ],
       prompt: "consent", // Force the user to consent
       state: state, // Pass the user ID in the state parameter
     });
     // Redirect the user to Google's OAuth consent screen
-    return res.redirect(authUrl);
+    return res.status(HTTPSTATUS.OK).json({
+      url: authUrl,
+    });
   }
 );
 
@@ -104,21 +107,14 @@ export const googleOAuthCallbackController = asyncHandler(
 
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
-    const people = google.people({ version: "v1", auth: oauth2Client });
 
-    const profile = await people.people.get({
-      resourceName: "people/me",
-      personFields: "emailAddresses",
-    });
-
-    const email = profile.data.emailAddresses?.[0]?.value || "";
+    console.log(tokens, "profile");
 
     if (!tokens.access_token) {
       return res.redirect(`${CLIENT_URL}&error=Access Token not passed`);
     }
 
     await Promise.all([
-      // Save the tokens in the database
       createIntegrationService({
         userId: userId,
         provider: IntegrationProviderEnum.GOOGLE,
@@ -126,9 +122,10 @@ export const googleOAuthCallbackController = asyncHandler(
         app_type: IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token || undefined,
+        expiry_date: tokens.expiry_date || null,
         metadata: {
-          email: email,
-          scope: tokens.scope, // Granted scopes
+          scope: tokens.scope,
+          token_type: tokens.token_type,
         },
       }),
     ]);
@@ -224,6 +221,7 @@ export const zoomOAuthCallbackController = asyncHandler(
       app_type: IntegrationAppTypeEnum.ZOOM_MEETING,
       access_token: access_token,
       refresh_token: refresh_token,
+      expiry_date: null,
       metadata: {
         email: email, // User's email
         timeZone: timeZone, // User's time zone

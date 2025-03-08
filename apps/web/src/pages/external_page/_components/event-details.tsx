@@ -1,24 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CalendarIcon, Clock } from "lucide-react";
-import { VideoConferencingPlatform } from "@/lib/types";
+import { locationOptions } from "@/lib/types";
 import { useBookingState } from "@/hooks/use-booking-state";
 import { formatSelectedSlot } from "@/lib/helper";
+import { UserType } from "@/types/api.type";
 
 const EventDetails = (props: {
+  eventTitle: string;
+  user?: UserType;
   username: string;
-  timeGap: number;
-  locationOption?: {
-    label: string;
-    value: VideoConferencingPlatform;
-    logo: string;
-    isAvailable: boolean;
-  };
+  duration: number;
+  eventLocationType: string;
 }) => {
-  const { timeGap, username, locationOption } = props;
-
-  const { next, isSuccess, selectedSlot, handleBack } = useBookingState();
+  const { eventTitle, duration, username, user, eventLocationType } = props;
 
   const navigate = useNavigate();
+  const { next, isSuccess, selectedSlot, handleBack } = useBookingState();
 
   const handleClick = () => {
     if (isSuccess) {
@@ -30,6 +27,10 @@ const EventDetails = (props: {
     }
     navigate(`/${username}`);
   };
+
+  const locationOption = locationOptions.find(
+    (option) => option.value === eventLocationType
+  );
 
   return (
     <div
@@ -56,13 +57,13 @@ const EventDetails = (props: {
              md:justify-center md:text-left"
         >
           <div
-            className="text-muted-foreground mt-4 text-base 
+            className="text-muted-foreground capitalize mt-4 text-base 
             font-semibold"
           >
-            TechwithEmma Subscribe
+            {user?.name}
           </div>
           <h1 className="font-bold text-2xl my-2 leading-[32px] text-[#0a2540]">
-            Client Meeting
+            {eventTitle}
           </h1>
 
           <div className="space-y-2 w-full max-w-52 m-auto font-medium mt-1 text-[#3c3e44]">
@@ -73,16 +74,16 @@ const EventDetails = (props: {
                 <CalendarIcon className="w-4 h-4 shrink-0 mt-1" />
                 <span className="font-medium">
                   {selectedSlot
-                    ? formatSelectedSlot(selectedSlot, timeGap)
+                    ? formatSelectedSlot(selectedSlot, duration)
                     : "No slot selected"}
                 </span>
               </div>
             )}
 
-            {timeGap && (
+            {duration && (
               <div className="flex justify-start text-[15px] gap-2 items-center">
                 <Clock className="w-4 h-4" />
-                <span className="font-medium">{timeGap} Min</span>
+                <span className="font-medium">{duration} Min</span>
               </div>
             )}
 
@@ -90,7 +91,7 @@ const EventDetails = (props: {
               {locationOption && (
                 <>
                   <img
-                    src={locationOption?.logo}
+                    src={locationOption?.logo as string}
                     alt={locationOption?.label}
                     className="w-5 h-5 mr-2"
                   />

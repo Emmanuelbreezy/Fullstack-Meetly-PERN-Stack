@@ -4,35 +4,31 @@ import outlookCalendarLogo from "@/assets/microsoft-outlook.svg";
 import microsoftTeamsLogo from "@/assets/microsoft-teams.svg";
 import zoomLogo from "@/assets/zoom.svg";
 
-export const IntegrationLogos: Record<IntegrationType, string> = {
-  GOOGLE_CALENDAR: googleCalendarLogo,
-  GOOGLE_MEET: googleMeetLogo,
+export const IntegrationLogos: Record<IntegrationAppType, string | string[]> = {
+  GOOGLE_MEET_AND_CALENDAR: [googleMeetLogo, googleCalendarLogo],
   ZOOM_MEETING: zoomLogo,
   MICROSOFT_TEAMS: microsoftTeamsLogo,
   OUTLOOK_CALENDAR: outlookCalendarLogo,
 };
-
-export type IntegrationType =
-  | "GOOGLE_MEET"
+export type IntegrationAppType =
+  | "GOOGLE_MEET_AND_CALENDAR"
   | "ZOOM_MEETING"
   | "MICROSOFT_TEAMS"
-  | "GOOGLE_CALENDAR"
   | "OUTLOOK_CALENDAR";
 
 export type IntegrationTitleType =
-  | "Google Meet"
+  | "Google Meet & Calendar"
   | "Zoom"
   | "Microsoft Teams"
-  | "Outlook Calendar"
-  | "Google Calendar";
+  | "Outlook Calendar";
 
 // Integration Descriptions
-export const IntegrationDescriptions: Record<IntegrationType, string> = {
-  GOOGLE_MEET: "Include Google Meet details in your Meetly events.",
+export const IntegrationDescriptions: Record<IntegrationAppType, string> = {
+  GOOGLE_MEET_AND_CALENDAR:
+    "Include Google Meet details in your Meetly events and sync with Google Calendar.",
   ZOOM_MEETING: "Include Zoom details in your Meetly events.",
   MICROSOFT_TEAMS:
     "Microsoft Teams integration for video conferencing and collaboration.",
-  GOOGLE_CALENDAR: "Google Calendar integration for scheduling and reminders.",
   OUTLOOK_CALENDAR:
     "Outlook Calendar integration for scheduling and reminders.",
 };
@@ -47,7 +43,7 @@ export const locationOptions = [
   {
     label: "Google Meet",
     value: VideoConferencingPlatform.GOOGLE_MEET_AND_CALENDAR,
-    logo: IntegrationLogos.GOOGLE_MEET,
+    logo: IntegrationLogos.GOOGLE_MEET_AND_CALENDAR?.[0],
     isAvailable: true,
   },
   {

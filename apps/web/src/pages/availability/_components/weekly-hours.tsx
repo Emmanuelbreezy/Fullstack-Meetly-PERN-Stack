@@ -1,6 +1,8 @@
 import { z } from "zod";
-import { useCallback } from "react";
+import { toast } from "sonner";
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { dayMapping } from "@/lib/availability";
 import { Input } from "@/components/ui/input";
@@ -14,52 +16,20 @@ import {
 } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import DayAvailability from "./day-availability";
+import { DayAvailabilityType } from "@/types/api.type";
+import { updateUserAvailabilityMutationFn } from "@/lib/api";
+import { Loader } from "@/components/loader";
 
-const WeeklyHoursRow = () => {
-  const dummyAvailability = [
-    {
-      day: "SUNDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: false, // Sunday is typically unavailable
-    },
-    {
-      day: "MONDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: true,
-    },
-    {
-      day: "TUESDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: true,
-    },
-    {
-      day: "WEDNESDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: true,
-    },
-    {
-      day: "THURSDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: true,
-    },
-    {
-      day: "FRIDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: true,
-    },
-    {
-      day: "SATURDAY",
-      startTime: "09:00",
-      endTime: "17:00",
-      isAvailable: false, // Saturday is typically unavailable
-    },
-  ];
+const WeeklyHoursRow = ({
+  days,
+  timeGap,
+}: {
+  days: DayAvailabilityType[];
+  timeGap: number;
+}) => {
+  const { mutate, isPending } = useMutation({
+    mutationFn: updateUserAvailabilityMutationFn,
+  });
 
   const timeGapSchema = z
     .number()
@@ -72,17 +42,17 @@ const WeeklyHoursRow = () => {
   const availabilitySchema = z
     .object({
       timeGap: timeGapSchema,
-      availability: z.array(
+      days: z.array(
         z.object({
           day: z.string(),
-          startTime: z.string().optional(),
-          endTime: z.string().optional(),
+          startTime: z.string(),
+          endTime: z.string(),
           isAvailable: z.boolean(),
         })
       ),
     })
     .superRefine((data, ctx) => {
-      data.availability.forEach((item, index) => {
+      data.days.forEach((item, index) => {
         if (item.isAvailable && item.startTime && item.endTime) {
           if (item.endTime <= item.startTime) {
             // Add error to both startTime and endTime fields
@@ -108,25 +78,44 @@ const WeeklyHoursRow = () => {
     mode: "onChange",
     defaultValues: {
       timeGap: 30,
-      availability: dummyAvailability,
+      days: [],
     },
   });
 
-  const onSubmit = (data: WeeklyHoursFormData) => {
-    console.log("Form Data:", data);
+  useEffect(() => {
+    form.setValue("days", days);
+    form.setValue("timeGap", timeGap);
+    form.trigger("days");
+  }, [days, form, timeGap]);
+
+  console.log(form.getValues(), "val");
+
+  const onSubmit = (values: WeeklyHoursFormData) => {
+    console.log("Form Data:", values);
+    if (isPending) return;
+
+    mutate(values, {
+      onSuccess: (response) => {
+        toast.success(response.message || "Availability updated successfully");
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error(error.message || "Failed to update availability");
+      },
+    });
   };
 
   const handleTimeSelect = useCallback(
     (day: string, field: "startTime" | "endTime", time: string) => {
       const index = form
-        .getValues("availability")
+        .getValues("days")
         .findIndex((item) => item.day === day);
       if (index !== -1) {
-        form.setValue(`availability.${index}.${field}`, time, {
+        form.setValue(`days.${index}.${field}`, time, {
           shouldValidate: true,
         });
-        form.trigger(`availability.${index}.startTime`);
-        form.trigger(`availability.${index}.endTime`);
+        form.trigger(`days.${index}.startTime`);
+        form.trigger(`days.${index}.endTime`);
       }
     },
     [form]
@@ -135,12 +124,12 @@ const WeeklyHoursRow = () => {
   const onRemove = useCallback(
     (day: string) => {
       const index = form
-        .getValues("availability")
+        .getValues("days")
         .findIndex((item) => item.day === day);
       if (index !== -1) {
-        form.setValue(`availability.${index}.isAvailable`, false);
-        form.setValue(`availability.${index}.startTime`, "09:00");
-        form.setValue(`availability.${index}.endTime`, "17:00");
+        form.setValue(`days.${index}.isAvailable`, false);
+        form.setValue(`days.${index}.startTime`, "09:00");
+        form.setValue(`days.${index}.endTime`, "17:00");
       }
     },
     [form]
@@ -168,11 +157,17 @@ const WeeklyHoursRow = () => {
                     type="number"
                     className="w-[100px] !py-[10px] min-h-[46px]
                      px-[14px] !h-auto"
+                    value={field.value || ""}
                     min="1"
                     onChange={(e) => {
-                      const value = parseInt(e.target.value, 10);
-                      if (!isNaN(value) && value > 0) {
-                        field.onChange(parseInt(e.target.value, 10));
+                      const value = e.target.value.trim();
+                      if (value === "") {
+                        field.onChange(null);
+                      } else {
+                        const parsedValue = parseInt(value, 10);
+                        if (!isNaN(parsedValue) && parsedValue > 0) {
+                          field.onChange(parsedValue);
+                        }
                       }
                     }}
                   />
@@ -184,10 +179,12 @@ const WeeklyHoursRow = () => {
         />
 
         <div className="space-y-1">
-          {form.watch("availability").map((day, index) => (
+          {form.watch("days").map((day, index) => (
             <DayAvailability
               key={day.day}
               day={day.day}
+              startTime={day.startTime}
+              endTime={day.endTime}
               isAvailable={day.isAvailable}
               index={index}
               form={form}
@@ -199,8 +196,8 @@ const WeeklyHoursRow = () => {
         </div>
 
         <div className="w-full pt-4">
-          <Button type="submit" className=" !px-10">
-            Save changes
+          <Button disabled={isPending} type="submit" className=" !px-10">
+            {isPending ? <Loader color="white" /> : "Save changes"}
           </Button>
         </div>
       </form>

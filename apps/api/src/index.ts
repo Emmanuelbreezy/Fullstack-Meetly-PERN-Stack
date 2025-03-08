@@ -10,7 +10,6 @@ import { errorHandler } from "./middlewares/errorHandler.middleware";
 import { initializeDatabase } from "./database/database";
 import authRoutes from "./routes/auth.route";
 import eventRoutes from "./routes/event.route";
-import { passportAuthenticateJWT } from "./config/passport.config";
 import integrationRoutes from "./routes/integration.route";
 import availabilityRoutes from "./routes/availability.route";
 import meetingRoutes from "./routes/meeting.route";

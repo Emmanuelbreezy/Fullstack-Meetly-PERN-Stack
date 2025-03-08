@@ -18,7 +18,7 @@ integrationRoutes.get(
 );
 
 integrationRoutes.get(
-  "/user/:appType",
+  "/check/:appType",
   passportAuthenticateJWT,
   checkUserIntegrationController
 );

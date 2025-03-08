@@ -1,17 +1,21 @@
 import { format, addMinutes, parseISO } from "date-fns";
 
-export const formatSelectedSlot = (slot: string | null, timeGap: number) => {
+export const formatSelectedSlot = (slot: string | null, duration: number) => {
   if (!slot) return null;
   // Decode the slot
   const decodedSlot = decodeURIComponent(slot);
   const startTime = parseISO(decodedSlot);
-  // Calculate the end time using the timeGap
-  const endTime = addMinutes(startTime, timeGap);
+  // Calculate the end time using the duration
+  const endTime = addMinutes(startTime, duration);
   const formattedDate = format(startTime, "EEEE, MMMM d, yyyy");
-  const formattedTime = `${format(startTime, "HH:mm")} – ${format(
+  const formattedTime = `${format(startTime, "h:mm a")} – ${format(
     endTime,
-    "HH:mm"
+    "h:mm a"
   )}`;
+  // const formattedTime = `${format(startTime, "HH:mm")} – ${format(
+  //   endTime,
+  //   "HH:mm"
+  // )}`;
 
   return `${formattedDate}, ${formattedTime}`;
 };

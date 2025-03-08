@@ -1,4 +1,4 @@
-import jwt, { SignOptions } from "jsonwebtoken";
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 import { config } from "../config/app.config";
 
 export type AccessTPayload = {
@@ -23,8 +23,17 @@ export const signJwtToken = (
   options?: SignOptsAndSecret
 ) => {
   const { secret, ...opts } = options || accessTokenSignOptions;
-  return jwt.sign(payload, secret, {
+  const token = jwt.sign(payload, secret, {
     ...defaults,
     ...opts,
   });
+
+  // Decode the token to get the expiration date
+  const decodedToken = jwt.decode(token) as JwtPayload | null;
+  const expiresAt = decodedToken?.exp ? decodedToken.exp * 1000 : null;
+
+  return {
+    token,
+    expiresAt,
+  };
 };
