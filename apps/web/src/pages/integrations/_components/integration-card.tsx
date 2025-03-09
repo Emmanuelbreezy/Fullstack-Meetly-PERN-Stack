@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader } from "@/components/loader";
@@ -8,12 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { connectGoogleIntegrationQueryFn } from "@/lib/api";
+import { connectAppIntegrationQueryFn } from "@/lib/api";
 import {
+  IntegrationAppEnum,
   IntegrationAppType,
   IntegrationDescriptions,
   IntegrationLogos,
-  VideoConferencingPlatform,
 } from "@/lib/types";
 import { PlusIcon } from "lucide-react";
 
@@ -32,6 +33,16 @@ interface ImageWrapperProps {
   className?: string;
 }
 
+const SUCCESS_MESSAGES: Record<any, string> = {
+  [IntegrationAppEnum.GOOGLE_MEET_AND_CALENDAR]:
+    "Google Calendar connected successfully!",
+};
+
+const ERROR_MESSAGES: Record<any, string> = {
+  [IntegrationAppEnum.GOOGLE_MEET_AND_CALENDAR]:
+    "Failed to connect Google Calendar. Please try again.",
+};
+
 const IntegrationCard = ({
   appType,
   title,
@@ -48,18 +59,16 @@ const IntegrationCard = ({
 
   const handleConnect = async (appType: IntegrationAppType) => {
     setSelectedType(appType);
-    if (appType === VideoConferencingPlatform.GOOGLE_MEET_AND_CALENDAR) {
-      setIsLoading(true);
-      try {
-        const { url } = await connectGoogleIntegrationQueryFn();
-        console.log("Google Calendar connected:", url);
-        setSelectedType(null);
-        window.location.href = url;
-      } catch (error) {
-        setIsLoading(false);
-        console.error("Failed to connect Google Calendar:", error);
-        toast.error("Failed to connect Google Calendar. Please try again.");
-      }
+    setIsLoading(true);
+    try {
+      const { url } = await connectAppIntegrationQueryFn(appType);
+      console.log(SUCCESS_MESSAGES[appType], url);
+      setSelectedType(null);
+      window.location.href = url;
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Failed to connect Google Calendar:", error);
+      toast.error(ERROR_MESSAGES[appType]);
     }
   };
 

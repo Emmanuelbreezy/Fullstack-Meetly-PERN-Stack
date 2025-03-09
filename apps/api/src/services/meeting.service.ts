@@ -18,7 +18,7 @@ import {
   EventLocationEnumType,
 } from "../database/entities/event.entity";
 import { validateGoogleToken } from "./integration.service";
-import { oauth2Client } from "../utils/google-oauth";
+import { googleOAuth2Client } from "../config/oauth.config";
 
 export const getUserMeetingsService = async (
   userId: string,
@@ -172,7 +172,7 @@ export const cancelMeetingService = async (meetingId: string) => {
     });
 
     if (calendarIntegration) {
-      // Step 3: Initialize the calendar client dynamically
+      // Initialize the calendar client dynamically
       const { calendar, calendarType } = await getCalendarClient(
         calendarIntegration.app_type,
         calendarIntegration.access_token,
@@ -194,7 +194,7 @@ export const cancelMeetingService = async (meetingId: string) => {
     console.error("Failed to delete event from calendar:", error);
     throw new BadRequestException("Failed to delete event from calendar");
   }
-  // Step 5: Delete the meeting
+
   meeting.status = MeetingStatus.CANCELLED;
   await meetingRepository.save(meeting);
 
@@ -214,8 +214,11 @@ async function getCalendarClient(
         refresh_token,
         expiry_date
       );
-      oauth2Client.setCredentials({ access_token: validToken });
-      const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+      googleOAuth2Client.setCredentials({ access_token: validToken });
+      const calendar = google.calendar({
+        version: "v3",
+        auth: googleOAuth2Client,
+      });
       return {
         calendar,
         calendarType: IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR,

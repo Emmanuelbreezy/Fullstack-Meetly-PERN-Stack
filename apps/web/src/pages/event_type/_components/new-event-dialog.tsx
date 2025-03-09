@@ -127,6 +127,7 @@ const NewEventDialog = (props: { btnVariant?: string }) => {
           });
           setSelectedLocationType(null);
           setIsOpen(false);
+          setAppConnected(false);
           form.reset();
           toast.success("Event created successfully");
         },

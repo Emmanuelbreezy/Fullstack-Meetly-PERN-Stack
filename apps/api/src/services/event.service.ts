@@ -82,6 +82,7 @@ export const getPublicEventsByUsernameService = async (username: string) => {
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository
       .createQueryBuilder("user")
+
       .leftJoinAndSelect(
         "user.events",
         "event",
@@ -96,7 +97,8 @@ export const getPublicEventsByUsernameService = async (username: string) => {
         "event.description",
         "event.slug",
         "event.duration",
-      ]) // Select event fields
+      ])
+      .orderBy("event.createdAt", "DESC")
       .getOne();
 
     if (!user) {

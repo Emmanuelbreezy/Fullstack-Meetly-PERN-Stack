@@ -5,9 +5,16 @@ import { MeetingType, PeriodType } from "@/types/api.type";
 import { format, parseISO } from "date-fns";
 import { locationOptions } from "@/lib/types";
 import { PeriodEnum } from "@/hooks/use-meeting-filter";
+import { Loader } from "@/components/loader";
+import { cn } from "@/lib/utils";
 
-const MeetingCard = (props: { meeting: MeetingType; period: PeriodType }) => {
-  const { meeting, period } = props;
+const MeetingCard = (props: {
+  meeting: MeetingType;
+  period: PeriodType;
+  isPending: boolean;
+  onCancel: () => void;
+}) => {
+  const { meeting, isPending, period, onCancel } = props;
 
   const [isShow, setIsShow] = useState(false);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -50,9 +57,12 @@ const MeetingCard = (props: { meeting: MeetingType; period: PeriodType }) => {
           >
             <span className="event-time">{formattedTime}</span>
             <span
-              className="absolute bg-primary/70
-              top-[19px] left-[23px] inline-block box-border w-[30px]
-             h-[30px] rounded-full"
+              className={cn(
+                `absolute bg-primary/70
+              top-[20px] left-[23px] inline-block box-border w-[30px]
+             h-[30px] rounded-full`,
+                period === PeriodEnum.CANCELLED && "!bg-destructive/70"
+              )}
             ></span>
           </div>
 
@@ -95,10 +105,18 @@ const MeetingCard = (props: { meeting: MeetingType; period: PeriodType }) => {
               <div>
                 <Button
                   variant="outline"
+                  type="button"
                   className="!w-full border-[#476788] text-[#0a2540] font-normal text-sm"
+                  onClick={onCancel}
                 >
-                  <Trash2Icon />
-                  <span>Cancel</span>
+                  {isPending ? (
+                    <Loader color="white" />
+                  ) : (
+                    <Fragment>
+                      <Trash2Icon />
+                      <span>Cancel</span>
+                    </Fragment>
+                  )}
                 </Button>
               </div>
             </div>

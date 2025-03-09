@@ -1,11 +1,9 @@
 import express from "express";
 import {
   checkUserIntegrationController,
-  connectGoogleController,
-  connectZoomController,
+  connectAppController,
   getUserIntegrationsController,
   googleOAuthCallbackController,
-  zoomOAuthCallbackController,
 } from "../controllers/integration.controller";
 import { passportAuthenticateJWT } from "../config/passport.config";
 
@@ -23,24 +21,13 @@ integrationRoutes.get(
   checkUserIntegrationController
 );
 
-// Initiate Google OAuth
 integrationRoutes.get(
-  "/google/connect",
+  "/connect/:appType",
   passportAuthenticateJWT,
-  connectGoogleController
+  connectAppController
 );
 
 // Handle Google OAuth redirect
 integrationRoutes.get("/google/callback", googleOAuthCallbackController);
-
-//******* */ Skip this ones ***********************
-integrationRoutes.post(
-  "/zoom/connect",
-  passportAuthenticateJWT,
-  connectZoomController
-);
-
-// Handle Zoom OAuth redirect
-integrationRoutes.get("/zoom/callback", zoomOAuthCallbackController);
 
 export default integrationRoutes;

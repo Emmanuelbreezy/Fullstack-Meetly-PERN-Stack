@@ -12,9 +12,11 @@ const CalendarBody = ({
   state,
   offset = {},
   isDateUnavailable,
+  timezone,
 }: {
   state: CalendarState;
   offset?: DateDuration;
+  timezone: string;
   isDateUnavailable?: (date: DateValue) => boolean;
 }) => {
   const startDate = state.visibleRange.start.add(offset);
@@ -62,6 +64,7 @@ const CalendarBody = ({
                     state={state}
                     date={date}
                     currentMonth={startDate}
+                    timezone={timezone}
                     isUnavailable={isDateUnavailable?.(date)}
                   />
                 ) : (

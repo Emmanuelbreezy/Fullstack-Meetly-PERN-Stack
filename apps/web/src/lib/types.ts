@@ -4,6 +4,13 @@ import outlookCalendarLogo from "@/assets/microsoft-outlook.svg";
 import microsoftTeamsLogo from "@/assets/microsoft-teams.svg";
 import zoomLogo from "@/assets/zoom.svg";
 
+export enum IntegrationAppEnum {
+  GOOGLE_MEET_AND_CALENDAR = "GOOGLE_MEET_AND_CALENDAR",
+  ZOOM_MEETING = "ZOOM_MEETING",
+  MICROSOFT_TEAMS = "MICROSOFT_TEAMS",
+  OUTLOOK_CALENDAR = "OUTLOOK_CALENDAR",
+}
+
 export const IntegrationLogos: Record<IntegrationAppType, string | string[]> = {
   GOOGLE_MEET_AND_CALENDAR: [googleMeetLogo, googleCalendarLogo],
   ZOOM_MEETING: zoomLogo,
@@ -34,9 +41,9 @@ export const IntegrationDescriptions: Record<IntegrationAppType, string> = {
 };
 
 export enum VideoConferencingPlatform {
-  GOOGLE_MEET_AND_CALENDAR = "GOOGLE_MEET_AND_CALENDAR",
-  ZOOM_MEETING = "ZOOM_MEETING",
-  MICROSOFT_TEAMS = "MICROSOFT_TEAMS",
+  GOOGLE_MEET_AND_CALENDAR = IntegrationAppEnum.GOOGLE_MEET_AND_CALENDAR,
+  ZOOM_MEETING = IntegrationAppEnum.ZOOM_MEETING,
+  MICROSOFT_TEAMS = IntegrationAppEnum.MICROSOFT_TEAMS,
 }
 
 export const locationOptions = [

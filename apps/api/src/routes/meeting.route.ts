@@ -16,7 +16,7 @@ meetingRoutes.get(
 
 meetingRoutes.post("/public/create", createMeetBookingForGuestController);
 
-meetingRoutes.delete(
+meetingRoutes.put(
   "/cancel/:meetingId",
   passportAuthenticateJWT,
   cancelMeetingController

@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { useParams } from "react-router-dom";
-import { today, getLocalTimeZone } from "@internationalized/date";
+import { today } from "@internationalized/date";
 import { useQuery } from "@tanstack/react-query";
 import PageContainer from "./_components/page-container";
 import BookingCalendar from "./_components/booking-calendar";
@@ -17,7 +17,7 @@ const UserSingleEventPage = () => {
   const username = param.username as string;
   const slug = param.slug as string;
 
-  const { next, selectedDate } = useBookingState();
+  const { next, timezone, selectedDate } = useBookingState();
 
   const { data, isFetching, isLoading, isError, error } = useQuery({
     queryKey: ["public_single_event"],
@@ -48,7 +48,7 @@ const UserSingleEventPage = () => {
         </div>
       ) : (
         event && (
-          <div className="w-full flex flex-col md:flex-row items-stretch justify-stretch p-0 px-1">
+          <div className="w-full flex flex-col lg:flex-row items-stretch justify-stretch p-0 px-1">
             {/* {Event Details} */}
             <EventDetails
               eventTitle={event?.title}
@@ -70,8 +70,8 @@ const UserSingleEventPage = () => {
                   {/* {Booking Calendar} */}
                   <BookingCalendar
                     eventId={event.id}
-                    minValue={today(getLocalTimeZone())}
-                    defaultValue={today(getLocalTimeZone())}
+                    minValue={today(timezone)}
+                    defaultValue={today(timezone)}
                   />
                 </Fragment>
               )}

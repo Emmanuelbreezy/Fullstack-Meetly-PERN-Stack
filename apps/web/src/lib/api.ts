@@ -16,7 +16,7 @@ import {
   UserMeetingsResponseType,
 } from "@/types/api.type";
 import { API, PublicAPI } from "./axios-client";
-import { VideoConferencingPlatform } from "./types";
+import { IntegrationAppType, VideoConferencingPlatform } from "./types";
 
 export const loginMutationFn = async (
   data: loginType
@@ -59,8 +59,10 @@ export const getAllIntegrationQueryFn =
     return response.data;
   };
 
-export const connectGoogleIntegrationQueryFn = async () => {
-  const response = await API.get(`integration/google/connect`);
+export const connectAppIntegrationQueryFn = async (
+  appType: IntegrationAppType
+) => {
+  const response = await API.get(`integration/connect/${appType}`);
   return response.data;
 };
 
@@ -87,6 +89,11 @@ export const getUserMeetingsQueryFn = async (
   const response = await API.get(
     `/meeting/user/all${filter ? `?filter=${filter}` : ""}`
   );
+  return response.data;
+};
+
+export const cancelMeetingMutationFn = async (meetingId: string) => {
+  const response = await API.put(`/meeting/cancel/${meetingId}`, {});
   return response.data;
 };
 

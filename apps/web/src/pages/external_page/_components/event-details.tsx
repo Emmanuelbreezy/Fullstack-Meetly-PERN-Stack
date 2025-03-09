@@ -35,7 +35,7 @@ const EventDetails = (props: {
 
   return (
     <div
-      className="sm:w-[350px] flex-shrink-0 border-b border-r-0 md:border-r md:border-b-0
+      className="lg:w-[350px] flex-shrink-0 border-b border-r-0 lg:border-r md:border-b
          border-[rgba(26,26,26,0.1)] lg:min-h-[550px]"
     >
       <div

@@ -12,15 +12,16 @@ import {
 } from "../database/entities/integration.entity";
 import {
   checkUserIntegrationService,
+  connectAppService,
   createIntegrationService,
   getUserIntegrationsService,
 } from "../services/integration.service";
 import { HTTPSTATUS } from "../config/http.config";
 import { withValidation } from "../middlewares/withValidation.middleware";
 import { AppTypeDTO } from "../database/dto/integration.dto";
-import { oauth2Client } from "../utils/google-oauth";
+import { googleOAuth2Client } from "../config/oauth.config";
 
-//NOW in utils/google-oauth
+//NOW in config/oauth.config.ts
 // export const oauth2Client = new google.auth.OAuth2(
 //   config.GOOGLE_CLIENT_ID,
 //   config.GOOGLE_CLIENT_SECRET,
@@ -60,29 +61,17 @@ export const checkUserIntegrationController = asyncHandler(
   })
 );
 
-// Step 1: Redirect to Google OAuth consent screen
-export const connectGoogleController = asyncHandler(
-  async (req: Request, res: Response) => {
+export const connectAppController = asyncHandler(
+  withValidation(
+    AppTypeDTO,
+    "params"
+  )(async (req: Request, res: Response) => {
     const userId = req.user?.id as string;
+    const appType = req.dto.appType;
 
-    if (!userId) {
-      throw new BadRequestException("User ID is required");
-    }
-    const state = encodeState({ userId });
-    // Generate the URL for Google's OAuth consent screen
-    const authUrl = oauth2Client.generateAuthUrl({
-      access_type: "offline", // Request a refresh token
-      scope: [
-        "https://www.googleapis.com/auth/calendar.events", // Calendar scope
-      ],
-      prompt: "consent", // Force the user to consent
-      state: state, // Pass the user ID in the state parameter
-    });
-    // Redirect the user to Google's OAuth consent screen
-    return res.status(HTTPSTATUS.OK).json({
-      url: authUrl,
-    });
-  }
+    const { url } = await connectAppService(userId, appType);
+    return res.status(HTTPSTATUS.OK).json({ url });
+  })
 );
 
 // Step 2: Handle Google OAuth redirect
@@ -105,10 +94,10 @@ export const googleOAuthCallbackController = asyncHandler(
       return res.redirect(`${CLIENT_URL}&error=User ID is required`);
     }
 
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
+    const { tokens } = await googleOAuth2Client.getToken(code);
+    googleOAuth2Client.setCredentials(tokens);
 
-    console.log(tokens, "profile");
+    //console.log(tokens, "profile");
 
     if (!tokens.access_token) {
       return res.redirect(`${CLIENT_URL}&error=Access Token not passed`);
@@ -150,6 +139,30 @@ export const googleOAuthCallbackController = asyncHandler(
 //*************** */ Skip this once *************************
 //*************** */ Skip this once *************************
 //*************** */ Skip this once *************************
+
+// export const connectGoogleController = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const userId = req.user?.id as string;
+
+//     if (!userId) {
+//       throw new BadRequestException("User ID is required");
+//     }
+//     const state = encodeState({ userId });
+//     // Generate the URL for Google's OAuth consent screen
+//     const authUrl = googleOAuth2Client.generateAuthUrl({
+//       access_type: "offline", // Request a refresh token
+//       scope: [
+//         "https://www.googleapis.com/auth/calendar.events", // Calendar scope
+//       ],
+//       prompt: "consent", // Force the user to consent
+//       state: state, // Pass the user ID in the state parameter
+//     });
+//     return res.status(HTTPSTATUS.OK).json({
+//       url: authUrl,
+//     });
+//   }
+// );
+
 export const connectZoomController = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?.id as string;

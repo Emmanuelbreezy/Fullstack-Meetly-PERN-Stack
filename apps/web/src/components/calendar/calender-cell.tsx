@@ -1,24 +1,26 @@
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
+import { CalendarState } from "react-stately";
 import {
   CalendarDate,
   getLocalTimeZone,
   isSameMonth,
   isToday,
 } from "@internationalized/date";
-import { useRef } from "react";
 import { mergeProps, useCalendarCell, useFocusRing } from "react-aria";
-import { CalendarState } from "react-stately";
 
 const CalendarCell = ({
   state,
   date,
   currentMonth,
   isUnavailable,
+  timezone = getLocalTimeZone(),
 }: {
   state: CalendarState;
   date: CalendarDate;
   currentMonth: CalendarDate;
   isUnavailable?: boolean;
+  timezone: string;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { cellProps, buttonProps, isSelected, isDisabled, formattedDate } =
@@ -31,7 +33,7 @@ const CalendarCell = ({
 
   const isOutsideMonth = !isSameMonth(currentMonth, date);
 
-  const isDateToday = isToday(date, getLocalTimeZone());
+  const isDateToday = isToday(date, timezone);
 
   return (
     <td

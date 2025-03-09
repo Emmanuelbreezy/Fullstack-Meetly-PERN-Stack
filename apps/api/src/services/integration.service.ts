@@ -9,7 +9,8 @@ import {
   BadRequestException,
   InternalServerException,
 } from "../utils/app-error";
-import { oauth2Client } from "../utils/google-oauth";
+import { googleOAuth2Client } from "../config/oauth.config";
+import { encodeState } from "../utils/helper";
 
 const appTypeToProviderMap: Record<
   IntegrationAppTypeEnum,
@@ -85,6 +86,31 @@ export const checkUserIntegrationService = async (
   }
 };
 
+export const connectAppService = async (
+  userId: string,
+  appType: IntegrationAppTypeEnum
+) => {
+  const state = encodeState({ userId, appType });
+
+  let authUrl: string;
+
+  switch (appType) {
+    case IntegrationAppTypeEnum.GOOGLE_MEET_AND_CALENDAR:
+      // Generate the URL for Google's OAuth consent screen
+      authUrl = googleOAuth2Client.generateAuthUrl({
+        access_type: "offline", // Request a refresh token
+        scope: ["https://www.googleapis.com/auth/calendar.events"], // Calendar scope
+        prompt: "consent", // Force the user to consent
+        state, // Pass the user ID in the state parameter
+      });
+      break;
+    default:
+      throw new BadRequestException("Unsupported app type");
+  }
+
+  return { url: authUrl };
+};
+
 export const createIntegrationService = async (data: {
   userId: string;
   provider: IntegrationProviderEnum;
@@ -136,8 +162,8 @@ export const validateGoogleToken = async (
 ) => {
   // If expiryDate is null, assume the token is expired
   if (expiryDate === null || Date.now() >= expiryDate) {
-    oauth2Client.setCredentials({ refresh_token: refreshToken });
-    const { credentials } = await oauth2Client.refreshAccessToken();
+    googleOAuth2Client.setCredentials({ refresh_token: refreshToken });
+    const { credentials } = await googleOAuth2Client.refreshAccessToken();
     return credentials.access_token;
   }
   return accessToken;

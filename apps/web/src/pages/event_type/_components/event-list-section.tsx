@@ -3,9 +3,11 @@ import EventCard from "./event-card";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toggleEventVisibilityMutationFn } from "@/lib/api";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const EventListSection = (props: { events: EventType[]; username: string }) => {
   const { events, username } = props;
+  const [pendingEventId, setPendingEventId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
@@ -13,6 +15,7 @@ const EventListSection = (props: { events: EventType[]; username: string }) => {
   });
 
   const toggleEventVisibility = (eventId: string) => {
+    setPendingEventId(eventId);
     mutate(
       {
         eventId: eventId,
@@ -22,6 +25,7 @@ const EventListSection = (props: { events: EventType[]; username: string }) => {
           queryClient.invalidateQueries({
             queryKey: ["event_list"],
           });
+          setPendingEventId(null);
           toast.success(`${response.message}`);
         },
         onError: () => {
@@ -47,7 +51,7 @@ const EventListSection = (props: { events: EventType[]; username: string }) => {
             duration={event.duration}
             isPrivate={event.isPrivate}
             username={username}
-            isPending={isPending}
+            isPending={pendingEventId === event.id ? isPending : false}
             onToggle={() => toggleEventVisibility(event.id)}
           />
         ))}
