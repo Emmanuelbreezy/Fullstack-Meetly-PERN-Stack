@@ -148,7 +148,7 @@ export const getAvailabilityForPublicEventService = async (eventId: string) => {
               dayAvailability.endTime, // User's end time for the day
               event.duration, // Duration of the event in minutes
               meetings, // User's existing meetings
-              format(nextDate, "yyyy-MM-dd"), // The specific date for this day
+              format(nextDate, "yyyy-MM-dd"),
               availability.timeGap // Time gap between slots
             )
           : []; // Return empty slots if the day is unavailable
@@ -156,7 +156,6 @@ export const getAvailabilityForPublicEventService = async (eventId: string) => {
         // Step 10: Add the Day and Available Slots to the Results
         availableDays.push({
           day: dayOfWeek,
-          dateStr: format(new Date(), "yyyy-MM-dd"), // Placeholder date, not used
           slots,
           isAvailable: dayAvailability.isAvailable,
         });
@@ -190,6 +189,8 @@ function getNextDateForDay(dayOfWeek: string): Date {
   return addDays(today, daysUntilTarget);
 }
 
+/**********generate AvailableTimeSlots  */
+
 function generateAvailableTimeSlots(
   startTime: Date, // The start time of the user's availability for the day
   endTime: Date, // The end time of the user's availability for the day
@@ -209,6 +210,18 @@ function generateAvailableTimeSlots(
     `${dateStr}T${endTime.toISOString().slice(11, 16)}`
   );
 
+  // const zonedStartTime = toZonedTime(
+  //   parseISO(`${dateStr}T${format(startTime, "HH:mm")}`),
+  //   timezone
+  // );
+  // const zonedEndTime = toZonedTime(
+  //   parseISO(`${dateStr}T${format(endTime, "HH:mm")}`),
+  //   timezone
+  // );
+
+  // Step 3: Get the current system time in the user's time zone
+  //const now = toZonedTime(new Date(), timezone);
+
   // Step 3: Get the current system time
   const now = new Date();
 
@@ -225,7 +238,7 @@ function generateAvailableTimeSlots(
       // Step 7: Check if the current slot is available
       if (isSlotAvailable(currentTime, slotEnd, meetings)) {
         // Step 8: If the slot is available, add it to the slots array
-        slots.push(format(currentTime, "HH:mm"));
+        slots.push(format(currentTime, "HH:mm")); //Without Zone
       }
     }
 
@@ -237,21 +250,36 @@ function generateAvailableTimeSlots(
   return slots;
 }
 
+/**********ISslot Available */
 function isSlotAvailable(
-  currentTime: Date,
+  slotStart: Date,
   slotEnd: Date,
   meetings: { startTime: Date; endTime: Date }[]
 ): boolean {
-  return !meetings.some((meeting) => {
-    const meetingStart = meeting.startTime;
-    const meetingEnd = meeting.endTime;
-    return (
-      (currentTime >= meetingStart && currentTime < meetingEnd) || // Slot starts during a meeting
-      (slotEnd > meetingStart && slotEnd <= meetingEnd) || // Slot ends during a meeting
-      (currentTime <= meetingStart && slotEnd >= meetingEnd) // Slot completely overlaps a meeting
-    );
-  });
+  // Check if the slot overlaps with any existing meetings
+  for (const meeting of meetings) {
+    if (slotStart < meeting.endTime && slotEnd > meeting.startTime) {
+      return false; // Slot is not available
+    }
+  }
+  return true; // Slot is available
 }
+
+// function isSlotAvailable(
+//   slotStart: Date,
+//   slotEnd: Date,
+//   meetings: { startTime: Date; endTime: Date }[]
+// ): boolean {
+//   return !meetings.some((meeting) => {
+//     const meetingStart = meeting.startTime;
+//     const meetingEnd = meeting.endTime;
+//     return (
+//       (slotStart >= meetingStart && slotStart < meetingEnd) || // Slot starts during a meeting
+//       (slotEnd > meetingStart && slotEnd <= meetingEnd) || // Slot ends during a meeting
+//       (slotStart <= meetingStart && slotEnd >= meetingEnd) // Slot completely overlaps a meeting
+//     );
+//   });
+// }
 
 //OLD CODE FORMAT  MANUAL -> WITHOUT Cascade
 // if (user.availability) {

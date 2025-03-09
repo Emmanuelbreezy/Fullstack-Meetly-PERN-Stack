@@ -154,3 +154,5 @@ export interface CreateMeetingType {
   guestEmail: string;
   additionalInfo?: string;
 }
+
+export type PeriodType = "UPCOMING" | "PAST" | "CANCELLED";

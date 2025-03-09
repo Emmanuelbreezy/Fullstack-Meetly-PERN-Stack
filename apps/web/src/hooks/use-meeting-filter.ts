@@ -1,8 +1,9 @@
 import { useQueryState } from "nuqs";
 
-enum PeriodEnum {
+export enum PeriodEnum {
   UPCOMING = "UPCOMING",
   PAST = "PAST",
+  CANCELLED = "CANCELLED",
 }
 
 const useMeetingFilter = () => {

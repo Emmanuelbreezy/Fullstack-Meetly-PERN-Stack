@@ -1,6 +1,7 @@
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { CalendarDate, getLocalTimeZone } from "@internationalized/date";
-import { format } from "date-fns";
+import { parse } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 export const useBookingState = () => {
   const [selectedDate, setSelectedDate] = useQueryState<CalendarDate>("date", {
@@ -13,10 +14,21 @@ export const useBookingState = () => {
     serialize: (value) => `${value.year}-${value.month}-${value.day}`,
   });
   const [selectedSlot, setSelectedSlot] = useQueryState("slot");
+
   const [next, setNext] = useQueryState(
     "next",
     parseAsBoolean.withDefault(false)
   );
+
+  const [timezone, setTimezone] = useQueryState("timezone", {
+    defaultValue: getLocalTimeZone(), // Default to user's system timezone
+  });
+
+  const [hourType, setHourType] = useQueryState<"12h" | "24h">("hourType", {
+    defaultValue: "24h",
+    parse: (value) => (value === "12h" ? "12h" : "24h"),
+    serialize: (value) => value,
+  });
 
   const [isSuccess, setIsSuccess] = useQueryState(
     "success",
@@ -32,13 +44,19 @@ export const useBookingState = () => {
       setSelectedSlot(null);
       return;
     }
-    // Step 1: Combine the selected date with the time slot
-    const slotDate = `${format(
-      selectedDate.toDate(getLocalTimeZone()),
-      "yyyy-MM-dd"
-    )}T${slot}:00.000Z`;
-    // Step 2: Encode the slot date
-    const encodedSlot = encodeURIComponent(slotDate);
+    // Parse the slot time (e.g., "09:00") and set it on the selected date
+    const parsedSlotTime = parse(slot, "HH:mm", new Date());
+    const slotDate = selectedDate.toDate(getLocalTimeZone());
+    slotDate.setHours(
+      parsedSlotTime.getHours(),
+      parsedSlotTime.getMinutes(),
+      0,
+      0
+    );
+    // Convert to UTC, format, and encode
+    const slotDateInUTC = toZonedTime(slotDate, timezone);
+    console.log(slotDateInUTC.toISOString(), ".toISOString()");
+    const encodedSlot = encodeURIComponent(slotDateInUTC.toISOString());
     setSelectedSlot(encodedSlot);
   };
 
@@ -53,16 +71,19 @@ export const useBookingState = () => {
   const handleSuccess = (value: boolean) => {
     setIsSuccess(value || true);
   };
-
   return {
     selectedDate,
     selectedSlot,
     next: next,
+    timezone,
+    hourType,
     isSuccess,
     handleSelectDate,
     handleSelectSlot,
     handleNext,
     handleBack,
     handleSuccess,
+    setTimezone,
+    setHourType,
   };
 };

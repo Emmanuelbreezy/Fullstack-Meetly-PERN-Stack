@@ -15,7 +15,8 @@ const EventDetails = (props: {
   const { eventTitle, duration, username, user, eventLocationType } = props;
 
   const navigate = useNavigate();
-  const { next, isSuccess, selectedSlot, handleBack } = useBookingState();
+  const { timezone, hourType, next, isSuccess, selectedSlot, handleBack } =
+    useBookingState();
 
   const handleClick = () => {
     if (isSuccess) {
@@ -34,7 +35,7 @@ const EventDetails = (props: {
 
   return (
     <div
-      className="sm:w-96 flex-shrink-0 border-b border-r-0 md:border-r md:border-b-0
+      className="sm:w-[350px] flex-shrink-0 border-b border-r-0 md:border-r md:border-b-0
          border-[rgba(26,26,26,0.1)] lg:min-h-[550px]"
     >
       <div
@@ -74,7 +75,12 @@ const EventDetails = (props: {
                 <CalendarIcon className="w-4 h-4 shrink-0 mt-1" />
                 <span className="font-medium">
                   {selectedSlot
-                    ? formatSelectedSlot(selectedSlot, duration)
+                    ? formatSelectedSlot(
+                        selectedSlot,
+                        duration,
+                        timezone,
+                        hourType
+                      )
                     : "No slot selected"}
                 </span>
               </div>

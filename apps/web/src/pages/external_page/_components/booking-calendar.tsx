@@ -6,11 +6,12 @@ import {
   getLocalTimeZone,
 } from "@internationalized/date";
 import { useBookingState } from "@/hooks/use-booking-state";
-import { decodeSlot } from "@/lib/helper";
+import { decodeSlot, formatSlot } from "@/lib/helper";
 import { getPublicAvailabilityByEventIdQueryFn } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { ErrorAlert } from "@/components/ErrorAlert";
 import { Loader } from "@/components/loader";
+import HourButton from "@/components/HourButton";
 
 interface BookingCalendarProps {
   eventId: string;
@@ -24,16 +25,19 @@ const BookingCalendar = ({
   defaultValue,
 }: BookingCalendarProps) => {
   const {
+    timezone,
+    hourType,
     selectedDate,
     selectedSlot,
     handleSelectDate,
     handleSelectSlot,
     handleNext,
+    setHourType,
   } = useBookingState();
   //const [date, setDate] = useState<CalendarDate>(today(getLocalTimeZone()));
 
   const { data, isFetching, isError, error } = useQuery({
-    queryKey: ["availbility_single_event"],
+    queryKey: ["availbility_single_event", eventId],
     queryFn: () => getPublicAvailabilityByEventIdQueryFn(eventId),
   });
 
@@ -66,7 +70,7 @@ const BookingCalendar = ({
     handleSelectDate(calendarDate); // Update useBookingState hook
   };
 
-  const selectedTime = decodeSlot(selectedSlot);
+  const selectedTime = decodeSlot(selectedSlot, timezone, hourType);
 
   return (
     <div className="relative flex-[1_1_50%] w-full flex-shrink-0 transition-all duration-220 ease-out p-4 pr-0">
@@ -90,18 +94,35 @@ const BookingCalendar = ({
             />
           </div>
           {selectedDate && availability ? (
-            <div className="w-full flex-shrink-0 max-w-[40%] pt-0 overflow-hidden md:ml-[19px]">
-              <h3 className="h-[38px] mt-0 mb-[10px] font-normal text-base leading-[38px]">
-                {format(
-                  selectedDate.toDate(getLocalTimeZone()),
-                  "EEEE, MMMM d"
-                )}
-              </h3>
+            <div className="w-full flex-shrink-0 max-w-[40%] pt-0 overflow-hidden md:ml-[-15px]">
+              <div className="w-full pb-3  flex flex-col md:flex-row justify-between pr-8">
+                <h3 className=" mt-0 mb-[10px] font-normal text-base leading-[38px]">
+                  {format(
+                    selectedDate.toDate(getLocalTimeZone()),
+                    "EEE, MMMM d"
+                  )}
+                </h3>
+
+                <div className="flex h-9 items-center border rounded-sm">
+                  <HourButton
+                    label="12h"
+                    isActive={hourType === "12h"}
+                    onClick={() => setHourType("12h")}
+                  />
+                  <HourButton
+                    label="24h"
+                    isActive={hourType === "24h"}
+                    onClick={() => setHourType("24h")}
+                  />
+                </div>
+              </div>
+
               <div
-                className="flex-[1_1_100px] pr-[31px] overflow-x-hidden overflow-y-auto scrollbar-thin
+                className="flex-[1_1_100px] pr-[8px] overflow-x-hidden overflow-y-auto scrollbar-thin
              scrollbar-track-transparent scroll--bar h-[400px]"
               >
                 {timeSlots.map((slot, i) => {
+                  const formattedSlot = formatSlot(slot, timezone, hourType);
                   return (
                     <div role="list" key={i}>
                       <div
@@ -112,7 +133,7 @@ const BookingCalendar = ({
                         {/* Selected Time and Next Button */}
                         <div
                           className={`absolute inset-0 z-20 flex items-center gap-1.5 justify-between transform transition-all duration-400 ease-in-out ${
-                            selectedTime === slot
+                            selectedTime === formattedSlot
                               ? "translate-x-0 opacity-100"
                               : "translate-x-full opacity-0"
                           }`}
@@ -122,7 +143,7 @@ const BookingCalendar = ({
                             className="w-full h-[52px] text-white rounded-[4px] bg-black/60 font-semibold disabled:opacity-100 disabled:pointer-events-none tracking-wide"
                             disabled
                           >
-                            {slot}
+                            {formattedSlot}
                           </button>
                           <button
                             type="button"
@@ -139,11 +160,15 @@ const BookingCalendar = ({
                         <button
                           type="button"
                           className={`w-full h-[52px] cursor-pointer border border-[rgba(0,105,255,0.5)] text-[rgb(0,105,255)] rounded-[4px] font-semibold hover:border-2 hover:border-[rgb(0,105,255)] tracking-wide transition-all duration-400 ease-in-out
-                         ${selectedTime === slot ? "opacity-0" : "opacity-100"}
+                         ${
+                           selectedTime === formattedSlot
+                             ? "opacity-0"
+                             : "opacity-100"
+                         }
                            `}
                           onClick={() => handleSelectSlot(slot)}
                         >
-                          {slot}
+                          {formattedSlot}
                         </button>
                       </div>
                     </div>

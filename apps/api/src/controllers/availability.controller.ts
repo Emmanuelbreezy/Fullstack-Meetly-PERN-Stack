@@ -51,6 +51,7 @@ export const getAvailabilityForPublicEventController = asyncHandler(
     EventIdDTO,
     "params"
   )(async (req: Request, res: Response) => {
+    //const timezone = (req.query.timezone as string) || "UTC";
     const availability = await getAvailabilityForPublicEventService(
       req.dto.eventId
     );

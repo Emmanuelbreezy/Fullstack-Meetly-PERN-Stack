@@ -14,7 +14,7 @@ import { User } from "./user.entity";
 
 export enum MeetingStatus {
   SCHEDULED = "SCHEDULED",
-  CANCELED = "CANCELED",
+  CANCELLED = "CANCELLED",
 }
 @Entity({ name: "meetings" })
 export class Meeting {

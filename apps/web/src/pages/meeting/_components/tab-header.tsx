@@ -35,6 +35,20 @@ const TabHeader = () => {
               Past
             </button>
           </li>
+          <li
+            className={`h-full ${
+              period === PeriodEnum.CANCELLED
+                ? "border-b-[3px] border-[#006bff]"
+                : ""
+            }`}
+          >
+            <button
+              className="p-[7px_0_14px] cursor-pointer text-[#0a2540]"
+              onClick={() => setPeriod(PeriodEnum.CANCELLED)}
+            >
+              Cancelled
+            </button>
+          </li>
         </ul>
       </div>
     </div>

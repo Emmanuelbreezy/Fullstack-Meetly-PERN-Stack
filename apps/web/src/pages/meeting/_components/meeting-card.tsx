@@ -1,12 +1,13 @@
 import { Fragment, useRef, useState } from "react";
 import { ChevronDown, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MeetingType } from "@/types/api.type";
+import { MeetingType, PeriodType } from "@/types/api.type";
 import { format, parseISO } from "date-fns";
 import { locationOptions } from "@/lib/types";
+import { PeriodEnum } from "@/hooks/use-meeting-filter";
 
-const MeetingCard = (props: { meeting: MeetingType }) => {
-  const { meeting } = props;
+const MeetingCard = (props: { meeting: MeetingType; period: PeriodType }) => {
+  const { meeting, period } = props;
 
   const [isShow, setIsShow] = useState(false);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -88,18 +89,20 @@ const MeetingCard = (props: { meeting: MeetingType }) => {
           padding: isShow ? "8px 24px 24px 24px" : "0 24px",
         }}
       >
-        <div className="flex pb-5">
-          <div className="box-border shrink-0 w-[310px] pr-[80px] pl-[40px] mb-5">
-            <div>
-              <Button
-                variant="outline"
-                className="!w-full border-[#476788] text-[#0a2540] font-normal text-sm"
-              >
-                <Trash2Icon />
-                <span>Cancel</span>
-              </Button>
+        <div className="flex flex-col-reverse md:flex-row pb-5">
+          {period === PeriodEnum.UPCOMING && (
+            <div className="box-border shrink-0 w-[80%] md:w-[310px] pr-[80px] pl-[40px] mb-5">
+              <div>
+                <Button
+                  variant="outline"
+                  className="!w-full border-[#476788] text-[#0a2540] font-normal text-sm"
+                >
+                  <Trash2Icon />
+                  <span>Cancel</span>
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
           <div className="flex-1">
             <ul>
               <li className="mb-4">

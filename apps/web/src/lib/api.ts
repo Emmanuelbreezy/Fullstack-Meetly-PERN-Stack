@@ -5,6 +5,7 @@ import {
   GetAllIntegrationResponseType,
   LoginResponseType,
   loginType,
+  PeriodType,
   PublicAvailabilityEventResponseType,
   PublicEventResponseType,
   PublicSingleEventDetailResponseType,
@@ -81,7 +82,7 @@ export const updateUserAvailabilityMutationFn = async (
 //*********** */ Meeting APIS
 
 export const getUserMeetingsQueryFn = async (
-  filter: "UPCOMING" | "PAST"
+  filter: PeriodType
 ): Promise<UserMeetingsResponseType> => {
   const response = await API.get(
     `/meeting/user/all${filter ? `?filter=${filter}` : ""}`
@@ -108,9 +109,12 @@ export const getSinglePublicEventBySlugQueryFn = async (data: {
 };
 
 export const getPublicAvailabilityByEventIdQueryFn = async (
-  eventId: string
+  eventId: string,
+  timezone?: string
 ): Promise<PublicAvailabilityEventResponseType> => {
-  const response = await PublicAPI.get(`/availability/public/${eventId}`);
+  const response = await PublicAPI.get(
+    `/availability/public/${eventId}${timezone ? `?timezone=${timezone}` : ""}`
+  );
   return response.data;
 };
 
